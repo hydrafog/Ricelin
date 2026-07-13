@@ -40,3 +40,4 @@ echo ":: Done. Theme installed and selected."
 echo "   Test without logging out:"
 echo "     sddm-greeter-qt6 --test-mode --theme ${DEST_DIR}"
 echo "   The sddm service was NOT touched; (re)start it yourself when ready."
+

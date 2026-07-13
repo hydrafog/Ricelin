@@ -11,5 +11,4 @@ require("modules.autostart")
 
 pcall(require, "modules.private")
 
--- GhostType hotkey (managed by the app)
 pcall(require, "ghosttype")

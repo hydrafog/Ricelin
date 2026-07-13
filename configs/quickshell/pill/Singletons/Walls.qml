@@ -26,6 +26,7 @@ Singleton {
     readonly property int count: entries.length
     property string current: ""
     property bool pending: false
+    property int thumbGeneration: 0
 
     readonly property string wpDir: Flags.wallpaperDir.length > 0 ? Flags.wallpaperDir : (Quickshell.env("HOME") + "/Ricelin/wallpapers")
     readonly property string thumbDir: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/ricelin-wp-thumbs/"
@@ -38,7 +39,7 @@ Singleton {
             pending = true;
             return;
         }
-        thumbProc.running = true;
+        listProc.running = true;
     }
 
     /**
@@ -79,7 +80,12 @@ Singleton {
     Process {
         id: thumbProc
         command: ["sh", root.thumbScript]
-        onExited: listProc.running = true
+        onExited: {
+            // Thumbs are now on disk — list wallpapers so Image never sees a
+            // missing file on first open.
+            root.thumbGeneration++;
+            listProc.running = true;
+        }
     }
 
     Process {
@@ -89,6 +95,7 @@ Singleton {
             onStreamFinished: {
                 var lines = this.text.split("\n");
                 var out = [];
+                var gen = root.thumbGeneration;
                 for (var i = 0; i < lines.length; i++) {
                     var tab = lines[i].indexOf("\t");
                     if (tab < 1)
@@ -99,7 +106,7 @@ Singleton {
                         path: path,
                         name: name,
                         mtime: parseFloat(lines[i].substring(0, tab)),
-                        thumb: root.thumbDir + name + ".png"
+                        thumb: root.thumbDir + name + ".png?gen=" + gen
                     });
                 }
                 root.entries = out;
@@ -136,5 +143,9 @@ Singleton {
         }
     }
 
-    Component.onCompleted: refresh()
+    Component.onCompleted: {
+        // Run thumbProc first; when it exits it starts listProc, so entries
+        // are only populated once thumbnails already exist on disk.
+        thumbProc.running = true;
+    }
 }

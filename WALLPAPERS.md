@@ -42,3 +42,4 @@ Featured in the demo video: `jexkwm` (the main one) and `gwpgv3`.
 | [![zp5z2w](https://th.wallhaven.cc/small/zp/zp5z2w.jpg)](https://whvn.cc/zp5z2w) | [`zp5z2w`](https://whvn.cc/zp5z2w) | 5160x2160 | [original](https://x.com/washanapple/status/1949156520173973913) |
 
 All art belongs to the original creators. If you uploaded one of these and want it removed from the list, open an issue.
+

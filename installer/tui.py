@@ -22,20 +22,18 @@ headless case. When there is no controlling terminal at all the interactive
 functions raise RuntimeError so the orchestrator falls back to its non-interactive
 defaults instead of hanging on a read that never returns.
 """
+
 import os
 import select
 import signal
 import sys
 import termios
 
-
 _NO_COLOR = os.environ.get("NO_COLOR") is not None
-
 
 def _rgb(r, g, b):
     """Truecolor foreground escape, or empty string when NO_COLOR is set."""
     return "" if _NO_COLOR else f"\033[38;2;{r};{g};{b}m"
-
 
 VERM = _rgb(192, 68, 43)
 FLAME = _rgb(255, 154, 100)
@@ -76,10 +74,8 @@ TORII = [
     (SLATE, "       ▟███▙      ▟███▙"),
 ]
 
-
 _tty_out = None
 _tty_out_tried = False
-
 
 def _out():
     """The terminal stream for all output: /dev/tty when present, else stdout."""
@@ -92,13 +88,11 @@ def _out():
             _tty_out = None
     return _tty_out or sys.stdout
 
-
 def _write(text):
     """Send text to the controlling terminal and flush it immediately."""
     stream = _out()
     stream.write(text)
     stream.flush()
-
 
 def _width():
     """Columns of the controlling terminal, with a safe 80-column fallback."""
@@ -107,11 +101,9 @@ def _width():
     except (OSError, ValueError, AttributeError):
         return 80
 
-
 def _vis(text):
     """Visible cell width of a string, counting the corner brackets as two."""
     return sum(2 if ch in (LBRACKET, RBRACKET) else 1 for ch in text)
-
 
 def _clip(segments, width):
     """
@@ -136,7 +128,6 @@ def _clip(segments, width):
             break
     return "".join(parts) + RESET
 
-
 def _wrap(text, width):
     """Greedy word wrap by visible width; always returns at least one line."""
     words = text.split()
@@ -155,7 +146,6 @@ def _wrap(text, width):
     lines.append(current)
     return lines
 
-
 def _header(marker, marker_color, title, title_color, width):
     """A step header line: two-space indent, the marker, the title."""
     return _clip(
@@ -163,21 +153,17 @@ def _header(marker, marker_color, title, title_color, width):
         width,
     )
 
-
 def _gutter(segments, width):
     """A content line hung on the quiet vertical connector bar."""
     return _clip([("", "  "), (FAINT, BAR), ("", "  ")] + list(segments), width)
-
 
 def _spacer(width):
     """A bare connector-bar line that breathes between steps."""
     return _clip([("", "  "), (FAINT, BAR)], width)
 
-
 def _bottom(width):
     """The vermilion bottom cap that closes an active prompt block."""
     return _clip([("", "  "), (VERM, OUTRO)], width)
-
 
 def _bracket_lines(value, width):
     """
@@ -194,14 +180,12 @@ def _bracket_lines(value, width):
         lines.append(_gutter([(CREAM, f"{left}{chunk}{right}")], width))
     return lines
 
-
 def _collapsed_block(title, value, width):
     """The frozen form of an answered step: done marker, value, a breathing bar."""
     lines = [_header(DONE, FAINT, title, CREAM, width)]
     lines.extend(_bracket_lines(value, width))
     lines.append(_spacer(width))
     return lines
-
 
 def _menu_block(title, options, idx, checked, multi, width):
     """
@@ -235,7 +219,6 @@ def _menu_block(title, options, idx, checked, multi, width):
     lines.append(_bottom(width))
     return lines
 
-
 def _confirm_block(title, summary, idx, width):
     """The active confirm block: the summary lines, then a Yes/No radio."""
     lines = [_header(ACTIVE, FLAME, title, BRIGHT, width)]
@@ -248,10 +231,11 @@ def _confirm_block(title, summary, idx, width):
         focused = i == idx
         dot, dot_color = (RADIO_ON, FLAME) if focused else (RADIO_OFF, FAINT)
         label_color = BRIGHT if focused else DIM
-        lines.append(_gutter([(dot_color, dot), ("", " "), (label_color, label)], width))
+        lines.append(
+            _gutter([(dot_color, dot), ("", " "), (label_color, label)], width)
+        )
     lines.append(_bottom(width))
     return lines
-
 
 def banner():
     """Print the torii art, the name and repo, then the intro marker once."""
@@ -275,7 +259,6 @@ def banner():
     lines.append(_spacer(width))
     _write("\n".join(lines) + "\n")
 
-
 def detected(rows):
     """
     Print the detection step, one fact per line on the gutter. Each row is
@@ -290,23 +273,21 @@ def detected(rows):
     out.append(_spacer(width))
     _write("\n".join(out) + "\n")
 
-
 def info(lines):
     """Print a quiet block of context hung on the connector gutter, word-wrapped."""
     if isinstance(lines, str):
         lines = [lines]
     width = _width()
     inner = max(8, width - 5)
-    out = [_gutter([(DIM, piece)], width)
-           for line in lines for piece in _wrap(line, inner)]
+    out = [
+        _gutter([(DIM, piece)], width) for line in lines for piece in _wrap(line, inner)
+    ]
     out.append(_spacer(width))
     _write("\n".join(out) + "\n")
-
 
 def outro(message):
     """Print the vermilion end marker that closes the whole flow."""
     _write(_header(OUTRO, VERM, message, CREAM, _width()) + "\n")
-
 
 def closing(title, tally, steps, attention, notes=None):
     """
@@ -343,13 +324,19 @@ def closing(title, tally, steps, attention, notes=None):
         out.append(_header(OUTRO, VERM, head, BRIGHT, width))
         labw = max((_vis(label) for label, _ in attention), default=0)
         for label, cmd in attention:
-            # Aligned one-liner when it fits; otherwise the instruction wraps onto
-            # its own indented lines, since a clipped fix-hint is a useless one.
             pad = labw - _vis(label) + 3
             if 7 + _vis(label) + pad + _vis(cmd) <= width:
-                out.append(_gutter(
-                    [(FLAME, DONE + " "), (CREAM, label),
-                     ("", " " * pad), (BRIGHT, cmd)], width))
+                out.append(
+                    _gutter(
+                        [
+                            (FLAME, DONE + " "),
+                            (CREAM, label),
+                            ("", " " * pad),
+                            (BRIGHT, cmd),
+                        ],
+                        width,
+                    )
+                )
             else:
                 out.append(_gutter([(FLAME, DONE + " "), (CREAM, label)], width))
                 for piece in _wrap(cmd, max(8, width - 11)):
@@ -358,11 +345,9 @@ def closing(title, tally, steps, attention, notes=None):
 
     _write("\n".join(out) + "\n")
 
-
 def _raise_keyboard_interrupt(signum, frame):
     """Turn a SIGTERM into a KeyboardInterrupt so the finally cleanup still runs."""
     raise KeyboardInterrupt
-
 
 def _enter_raw(fd):
     """
@@ -384,17 +369,12 @@ def _enter_raw(fd):
         | termios.IXON
     )
     new[3] &= ~(
-        termios.ECHO
-        | termios.ECHONL
-        | termios.ICANON
-        | termios.ISIG
-        | termios.IEXTEN
+        termios.ECHO | termios.ECHONL | termios.ICANON | termios.ISIG | termios.IEXTEN
     )
     new[6][termios.VMIN] = 1
     new[6][termios.VTIME] = 0
     termios.tcsetattr(fd, termios.TCSADRAIN, new)
     return saved
-
 
 class _Keys:
     """
@@ -449,7 +429,9 @@ class _Keys:
             if nxt != b"[":
                 return "esc"
             arrow = os.read(self.fd, 1)
-            return {b"A": "up", b"B": "down", b"C": "right", b"D": "left"}.get(arrow, "esc")
+            return {b"A": "up", b"B": "down", b"C": "right", b"D": "left"}.get(
+                arrow, "esc"
+            )
         if data in (b"\r", b"\n"):
             return "enter"
         if data == b" ":
@@ -458,9 +440,7 @@ class _Keys:
             return "ctrl-c"
         return data.decode("utf-8", "ignore")
 
-
 _PENDING = object()
-
 
 def _drive(keys, render, handle, collapse):
     """
@@ -485,7 +465,6 @@ def _drive(keys, render, handle, collapse):
         _write("\n".join(collapse(result)) + "\n")
         return result
 
-
 def select_one(title, options, default=0):
     """
     Radio prompt. options is a list of (label, desc, recommended_bool). The filled
@@ -498,7 +477,9 @@ def select_one(title, options, default=0):
         state = {"idx": default}
 
         def render():
-            return _menu_block(title, options, state["idx"], {state["idx"]}, False, _width())
+            return _menu_block(
+                title, options, state["idx"], {state["idx"]}, False, _width()
+            )
 
         def handle(key):
             if key in ("up", "k"):
@@ -516,7 +497,6 @@ def select_one(title, options, default=0):
 
         return _drive(keys, render, handle, collapse)
 
-
 def select_many(title, options, preselect=()):
     """
     Multiselect prompt. Space toggles the focused row, enter confirms. options is a
@@ -530,7 +510,9 @@ def select_many(title, options, preselect=()):
         state = {"idx": 0, "checked": set(preselect)}
 
         def render():
-            return _menu_block(title, options, state["idx"], state["checked"], True, _width())
+            return _menu_block(
+                title, options, state["idx"], state["checked"], True, _width()
+            )
 
         def handle(key):
             if key in ("up", "k"):
@@ -550,7 +532,6 @@ def select_many(title, options, preselect=()):
             return _collapsed_block(title, value, _width())
 
         return _drive(keys, render, handle, collapse)
-
 
 def confirm(title, lines):
     """
@@ -583,7 +564,6 @@ def confirm(title, lines):
             return _collapsed_block(title, "Yes" if result else "No", _width())
 
         return _drive(keys, render, handle, collapse)
-
 
 def _selftest():
     """A real sample flow so Erik can run this file and feel each step collapse."""
@@ -624,6 +604,6 @@ def _selftest():
         return 1
     return 0
 
-
 if __name__ == "__main__":
     sys.exit(_selftest())
+

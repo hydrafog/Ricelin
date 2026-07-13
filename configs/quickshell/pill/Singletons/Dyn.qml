@@ -37,7 +37,7 @@ Singleton {
         path: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/ricelin/colors.json"
         blockLoading: true
         watchChanges: true
-        printErrors: false
+        printErrors: true
 
         onFileChanged: reload()
 

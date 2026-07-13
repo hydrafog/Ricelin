@@ -22,32 +22,70 @@ Singleton {
      * token to black, while the accent always loads and contrasts the pill
      * surface. Static mode keeps the fixed warm hex.
      */
-    readonly property color onGlow: dyn ? Dyn.primary : "#ff9a64"
+    property color onGlow: dyn ? Dyn.primary : "#ff9a64"
+    Behavior on onGlow { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    readonly property color verm:     dyn ? Qt.darker(Dyn.primary, 1.18) : "#c0442b"
-    readonly property color vermLit:  dyn ? Dyn.primary : "#e0563b"
-    readonly property color vermDeep: dyn ? Dyn.primaryContainer : "#a3371f"
-    readonly property color cream:    dyn ? Dyn.cream : "#e6d6cb"
-    readonly property color bright:   dyn ? Dyn.bright : "#fff6f0"
-    readonly property color dim:      dyn ? Dyn.dim : "#8a7d74"
-    readonly property color cardTop:  dyn ? Dyn.surfaceContainerHigh : "#2e231b"
-    readonly property color cardBot:  dyn ? Dyn.surfaceContainerLow : "#221813"
-    readonly property color border:   dyn ? Dyn.outlineVariant : "#3a2a22"
-    readonly property color shadow:     Qt.rgba(0, 0, 0, 0.55)
-    readonly property color tileBg:   dyn ? Dyn.surface : "#211711"
-    readonly property color subtle:   dyn ? Dyn.subtle : "#b9a99e"
-    readonly property color faint:    dyn ? Dyn.faint : "#6f635b"
-    readonly property color iconDim:  dyn ? Dyn.iconDim : "#cdbfb4"
+    property color verm:     dyn ? Qt.darker(Dyn.primary, 1.18) : "#c0442b"
+    Behavior on verm { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color vermLit:  dyn ? Dyn.primary : "#e0563b"
+    Behavior on vermLit { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color vermDeep: dyn ? Dyn.primaryContainer : "#a3371f"
+    Behavior on vermDeep { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color cream:    dyn ? Dyn.cream : "#e6d6cb"
+    Behavior on cream { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color bright:   dyn ? Dyn.bright : "#fff6f0"
+    Behavior on bright { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color dim:      dyn ? Dyn.dim : "#8a7d74"
+    Behavior on dim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color cardTop:  dyn ? Dyn.surfaceContainerHigh : "#2e231b"
+    Behavior on cardTop { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color cardBot:  dyn ? Dyn.surfaceContainerLow : "#221813"
+    Behavior on cardBot { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color border:   dyn ? Dyn.outlineVariant : "#3a2a22"
+    Behavior on border { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color shadow:     Qt.rgba(0, 0, 0, 0.0)
+    property color tileBg:   dyn ? Dyn.surface : "#211711"
+    Behavior on tileBg { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color subtle:   dyn ? Dyn.subtle : "#b9a99e"
+    Behavior on subtle { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color faint:    dyn ? Dyn.faint : "#6f635b"
+    Behavior on faint { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color iconDim:  dyn ? Dyn.iconDim : "#cdbfb4"
+    Behavior on iconDim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
     readonly property color hair:     Qt.alpha(cream, 0.13)
     readonly property color hairSoft: Qt.alpha(cream, 0.08)
     readonly property color sheen:    Qt.alpha(cream, 0.07)
-    readonly property color vermDim:   dyn ? Qt.darker(Dyn.primary, 1.5) : "#8a5440"
-    readonly property color vermDimDeep: dyn ? Qt.darker(Dyn.primary, 2.2) : "#5a3526"
-    readonly property color vermBurn:  dyn ? Qt.darker(Dyn.primaryContainer, 1.1) : "#8a2c14"
-    readonly property color tickRest:  dyn ? Dyn.tickRest : "#cbb6a3"
+    property color vermDim:   dyn ? Qt.darker(Dyn.primary, 1.5) : "#8a5440"
+    Behavior on vermDim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color vermDimDeep: dyn ? Qt.darker(Dyn.primary, 2.2) : "#5a3526"
+    Behavior on vermDimDeep { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color vermBurn:  dyn ? Qt.darker(Dyn.primaryContainer, 1.1) : "#8a2c14"
+    Behavior on vermBurn { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color tickRest:  dyn ? Dyn.tickRest : "#cbb6a3"
+    Behavior on tickRest { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
     readonly property color threadBg:  Qt.alpha(cream, 0.13)
-    readonly property color flameCore: dyn ? Qt.lighter(onGlow, 1.03) : "#ffd9c2"
-    readonly property color flameGlow: dyn ? onGlow : "#ff9a64"
+    property color flameCore: dyn ? Qt.lighter(onGlow, 1.03) : "#ffd9c2"
+    Behavior on flameCore { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color flameGlow: dyn ? onGlow : "#ff9a64"
+    Behavior on flameGlow { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     /**
      * Flame canvas ramp: literal hex strings (color type won't work), fed
@@ -59,12 +97,15 @@ Singleton {
     readonly property string flameEmber: dyn ? Dyn.primaryContainer : "#7e2812"
     readonly property string flameBurn:  dyn ? Dyn.primaryContainer : "#8a2c14"
     readonly property string flameTip:   dyn ? Dyn.onPrimaryContainer : "#ffb38a"
-    readonly property color todayWarm: dyn ? onGlow : "#ffb38a"
-    readonly property color ghost:     dyn ? Dyn.surfaceContainerHighest : "#594636"
+    property color todayWarm: dyn ? onGlow : "#ffb38a"
+    Behavior on todayWarm { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+
+    property color ghost:     dyn ? Dyn.surfaceContainerHighest : "#594636"
+    Behavior on ghost { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
     readonly property color frameBg:      Qt.alpha(cream, 0.055)
     readonly property color frameBorder:  Qt.alpha(cream, 0.10)
     readonly property color creamMenu:     Qt.alpha(cream, 0.82)
-    readonly property real shadowOpacity: 0.5
+    readonly property real shadowOpacity: 0.0
     readonly property var fontFamilies: Qt.fontFamilies()
     readonly property string font: (Flags.uiFont.length > 0 && fontFamilies.indexOf(Flags.uiFont) >= 0) ? Flags.uiFont : "Inter"
     readonly property string fontJp: "Zen Kaku Gothic New"

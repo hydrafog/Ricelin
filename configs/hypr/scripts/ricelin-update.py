@@ -19,6 +19,7 @@ three-way merge and the start of the changelog range.
 The maintainer and anyone who installed by symlinking the config into a git
 work-tree are detected as devmode and left alone, since they update with plain git.
 """
+
 import datetime
 import json
 import os
@@ -43,28 +44,25 @@ PROTECTED = [
     "hypr/hypridle.conf",
 ]
 
-
 def data_dir():
     base = os.environ.get("XDG_DATA_HOME") or str(Path.home() / ".local" / "share")
     return Path(base) / "ricelin-update"
-
 
 def manifest_path():
     base = os.environ.get("XDG_STATE_HOME") or str(Path.home() / ".local" / "state")
     return Path(base) / "ricelin" / "update.json"
 
-
 def git(repo, *args, check=True):
     """Run a git command inside repo and return stdout, raising on failure when check."""
     return subprocess.run(
         ["git", "-C", str(repo), *args],
-        capture_output=True, text=True, check=check,
+        capture_output=True,
+        text=True,
+        check=check,
     ).stdout
-
 
 class CorruptManifest(Exception):
     """The manifest exists but cannot be parsed, so we must not treat it as first run."""
-
 
 def load_manifest():
     """
@@ -80,7 +78,6 @@ def load_manifest():
         return json.loads(path.read_text())
     except (OSError, ValueError) as exc:
         raise CorruptManifest(str(exc))
-
 
 def atomic_write_bytes(path, data):
     """
@@ -98,10 +95,8 @@ def atomic_write_bytes(path, data):
             os.unlink(tmp)
         raise
 
-
 def save_manifest(manifest):
     atomic_write_bytes(manifest_path(), json.dumps(manifest, indent=2).encode("utf-8"))
-
 
 def backup_protected(config_root):
     """
@@ -123,18 +118,18 @@ def backup_protected(config_root):
         made = dest_root
     return made
 
-
 def in_git_worktree(path):
     """True when path lives inside a git work-tree, used to spot devmode installs."""
     try:
         out = subprocess.run(
             ["git", "-C", str(path), "rev-parse", "--is-inside-work-tree"],
-            capture_output=True, text=True, check=False,
+            capture_output=True,
+            text=True,
+            check=False,
         ).stdout.strip()
         return out == "true"
     except OSError:
         return False
-
 
 def is_devmode(config_root):
     """
@@ -150,7 +145,6 @@ def is_devmode(config_root):
             return True
     return False
 
-
 def ensure_clone(remote, do_fetch):
     """Clone the pristine mirror if missing, otherwise fetch. Returns the clone path."""
     clone = data_dir()
@@ -161,22 +155,20 @@ def ensure_clone(remote, do_fetch):
     clone.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(
         ["git", "clone", "--quiet", remote, str(clone)],
-        capture_output=True, text=True, check=True,
+        capture_output=True,
+        text=True,
+        check=True,
     )
     return clone
-
 
 def origin_head(clone):
     return git(clone, "rev-parse", "origin/main").strip()
 
-
 def commit_date(clone, sha):
     return git(clone, "show", "-s", "--format=%cs", sha).strip()
 
-
 def short_sha(clone, sha):
     return git(clone, "rev-parse", "--short", sha).strip()
-
 
 def behind_count(clone, base, head):
     if not base:
@@ -186,7 +178,6 @@ def behind_count(clone, base, head):
         return int(out)
     except (subprocess.CalledProcessError, ValueError):
         return 0
-
 
 def extract_changelog(clone, base, head):
     """Pull the changelog: trailer from every commit in base..head, newest first."""
@@ -203,7 +194,6 @@ def extract_changelog(clone, base, head):
                     lines.append(text)
     return lines
 
-
 def tracked_config_files(clone, ref):
     """
     Every file under configs/ at ref, relative to configs/. Listed from the commit
@@ -217,20 +207,19 @@ def tracked_config_files(clone, ref):
     for line in out.splitlines():
         line = line.strip()
         if line.startswith("configs/"):
-            rels.append(line[len("configs/"):])
+            rels.append(line[len("configs/") :])
     return rels
-
 
 def show_at(clone, sha, rel):
     """File content at a sha, or None when the path didn't exist there."""
     result = subprocess.run(
         ["git", "-C", str(clone), "show", f"{sha}:configs/{rel}"],
-        capture_output=True, check=False,
+        capture_output=True,
+        check=False,
     )
     if result.returncode != 0:
         return None
     return result.stdout
-
 
 def merge_file(theirs, base, new):
     """git merge-file semantics. Returns (merged_bytes, clean) where clean is exit 0."""
@@ -243,14 +232,13 @@ def merge_file(theirs, base, new):
         np.write_bytes(new)
         result = subprocess.run(
             ["git", "merge-file", "-p", str(tp), str(bp), str(np)],
-            capture_output=True, check=False,
+            capture_output=True,
+            check=False,
         )
         return result.stdout, result.returncode == 0
 
-
 def module_name(rel):
     return Path(rel).stem
-
 
 def reconcile_protected(clone, config_root, manifest, head, apply, take):
     """
@@ -296,7 +284,6 @@ def reconcile_protected(clone, config_root, manifest, head, apply, take):
             conflicts.append(rel)
     return rows, conflicts, sha_updates
 
-
 def sync_code(clone, config_root, head, apply):
     """
     Overwrite every tracked config file that isn't protected with the upstream
@@ -323,13 +310,11 @@ def sync_code(clone, config_root, head, apply):
             atomic_write_bytes(live_path, new)
     return changed
 
-
 def baseline_modules(manifest, head):
     """First run: record head as the base for every protected file without merging."""
     mods = manifest.setdefault("modules", {})
     for rel in PROTECTED:
         mods[rel] = head
-
 
 def baseline(config_root, sha):
     """
@@ -354,30 +339,51 @@ def baseline(config_root, sha):
     save_manifest(manifest)
     return {"status": "baselined", "syncedSha": sha}
 
-
-# ── Missing dependencies ──────────────────────────────────────────────────────
-#
-# A Ricelin update can introduce a new package the rice now needs (cava did once).
-# The engine reads the upstream package manifest from the clone, works out which
-# core packages are not installed on this machine, and offers to install the chosen
-# ones on apply.
-#
-# The family detection and name resolution below are a deliberately inlined copy of
-# installer/distro.py. The engine ships to user machines on its own and must never
-# import the installer package, so the two are kept in sync by hand rather than
-# shared. Only the slice this feature needs is copied.
-
 FAMILY_TOKENS = {
-    "arch": ("arch", "cachyos", "endeavouros", "manjaro", "garuda", "artix",
-             "arcolinux", "archcraft", "rebornos", "athena", "blackarch", "archbang",
-             "crystal", "snigdha", "parabola", "obarun", "arch32", "hyperbola", "steamos",
-             "omarchy", "xerolinux", "archman", "biglinux", "ctlos", "tromjaro",
-             "bluestar", "arkane", "blendos", "acreetionos", "mabox"),
-    "debian": ("debian", "ubuntu", "linuxmint", "pop", "elementary", "zorin", "raspbian"),
+    "arch": (
+        "arch",
+        "cachyos",
+        "endeavouros",
+        "manjaro",
+        "garuda",
+        "artix",
+        "arcolinux",
+        "archcraft",
+        "rebornos",
+        "athena",
+        "blackarch",
+        "archbang",
+        "crystal",
+        "snigdha",
+        "parabola",
+        "obarun",
+        "arch32",
+        "hyperbola",
+        "steamos",
+        "omarchy",
+        "xerolinux",
+        "archman",
+        "biglinux",
+        "ctlos",
+        "tromjaro",
+        "bluestar",
+        "arkane",
+        "blendos",
+        "acreetionos",
+        "mabox",
+    ),
+    "debian": (
+        "debian",
+        "ubuntu",
+        "linuxmint",
+        "pop",
+        "elementary",
+        "zorin",
+        "raspbian",
+    ),
     "fedora": ("fedora", "nobara", "rhel", "centos", "rocky", "almalinux"),
     "suse": ("suse", "opensuse", "sles", "sled", "tumbleweed", "leap"),
 }
-
 
 def os_release(path="/etc/os-release"):
     data = {}
@@ -391,7 +397,6 @@ def os_release(path="/etc/os-release"):
         pass
     return data
 
-
 def detect_family(path="/etc/os-release"):
     """Map os-release ID then ID_LIKE onto a package family, or "unknown"."""
     data = os_release(path)
@@ -403,11 +408,9 @@ def detect_family(path="/etc/os-release"):
                 return fam
     return "unknown"
 
-
 def native_name(pkg, family):
     """The native package name for this family, or None when there is none."""
     return (pkg.get("names") or {}).get(family)
-
 
 def manifest_at(clone, sha):
     """
@@ -418,7 +421,8 @@ def manifest_at(clone, sha):
     """
     result = subprocess.run(
         ["git", "-C", str(clone), "show", f"{sha}:installer/packages.json"],
-        capture_output=True, check=False,
+        capture_output=True,
+        check=False,
     )
     if result.returncode != 0:
         return None
@@ -426,7 +430,6 @@ def manifest_at(clone, sha):
         return json.loads(result.stdout)
     except ValueError:
         return None
-
 
 def pkg_installed(name, family):
     """
@@ -439,14 +442,16 @@ def pkg_installed(name, family):
             r = subprocess.run(["pacman", "-Qq", name], capture_output=True, text=True)
             return r.returncode == 0
         if family == "debian":
-            r = subprocess.run(["dpkg-query", "-W", "-f=${Status}", name],
-                               capture_output=True, text=True)
+            r = subprocess.run(
+                ["dpkg-query", "-W", "-f=${Status}", name],
+                capture_output=True,
+                text=True,
+            )
             return "install ok installed" in r.stdout
         r = subprocess.run(["rpm", "-q", name], capture_output=True, text=True)
         return r.returncode == 0
     except (OSError, subprocess.SubprocessError):
         return False
-
 
 def detect_missing_deps(clone, head):
     """
@@ -466,21 +471,32 @@ def detect_missing_deps(clone, head):
         name = native_name(pkg, family)
         if not name or pkg_installed(name, family):
             continue
-        rows.append({"id": pkg["id"], "name": name,
-                     "desc": pkg.get("desc", ""), "group": pkg.get("group")})
+        rows.append(
+            {
+                "id": pkg["id"],
+                "name": name,
+                "desc": pkg.get("desc", ""),
+                "group": pkg.get("group"),
+            }
+        )
     return rows
-
 
 def native_install_argv(family, names):
     """The bare repo-install argv (no privilege wrapper) for one or more native packages."""
     if family == "arch":
         return ["pacman", "-S", "--needed", "--noconfirm", *names]
     if family == "debian":
-        return ["env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "install", "-y", *names]
+        return [
+            "env",
+            "DEBIAN_FRONTEND=noninteractive",
+            "apt-get",
+            "install",
+            "-y",
+            *names,
+        ]
     if family == "fedora":
         return ["dnf", "install", "-y", *names]
     return ["zypper", "--non-interactive", "install", *names]
-
 
 def manual_hint(pkg, family, fallbacks):
     """
@@ -498,18 +514,14 @@ def manual_hint(pkg, family, fallbacks):
     hint = fallbacks.get(pkg.get("fallback")) or "install it manually"
     return f"no native package on this system, {hint}"
 
-
 def native_install_reason(result, os_error):
     """Why a batched repo install didn't land, kept short for the surface."""
     if os_error:
         return os_error
-    # pkexec exits 126 when the prompt is dismissed and 127 when authorisation is
-    # denied, the two cases that otherwise read as a silent success.
     if result.returncode in (126, 127):
         return "the password prompt was cancelled"
     tail = (result.stderr or "").strip().splitlines()
     return tail[-1] if tail else "install failed"
-
 
 def install_missing_deps(clone, head, ids):
     """
@@ -524,12 +536,14 @@ def install_missing_deps(clone, head, ids):
     family = detect_family()
     manifest = manifest_at(clone, head)
     if family == "unknown" or not manifest:
-        return [{"id": pid, "error": "couldn't read the package manifest"} for pid in ids]
+        return [
+            {"id": pid, "error": "couldn't read the package manifest"} for pid in ids
+        ]
     by_id = {p["id"]: p for p in manifest.get("packages", [])}
     fallbacks = manifest.get("fallbacks", {})
 
     failures = []
-    repo = []  # (id, native_name) pairs to batch into one privileged install
+    repo = []
     for pid in ids:
         pkg = by_id.get(pid)
         if pkg is None:
@@ -548,19 +562,31 @@ def install_missing_deps(clone, head, ids):
             result = subprocess.run(cmd, capture_output=True, text=True, check=False)
         except OSError as exc:
             os_error = str(exc)
-        # Verify per package so a partial transaction reports only what's still missing.
         for pid, name in repo:
             if not pkg_installed(name, family):
-                failures.append({"id": pid, "error": native_install_reason(result, os_error)})
+                failures.append(
+                    {"id": pid, "error": native_install_reason(result, os_error)}
+                )
     return failures
-
 
 def run(mode, remote, config_root, take, install_ids):
     if is_devmode(config_root):
-        return {"status": "devmode", "behind": 0, "fromDate": "", "toDate": "",
-                "version": "", "changelog": [], "codeChanged": False, "modules": [],
-                "conflicts": [], "missingDeps": [], "depFailures": [],
-                "applied": False, "restartNeeded": False, "error": None}
+        return {
+            "status": "devmode",
+            "behind": 0,
+            "fromDate": "",
+            "toDate": "",
+            "version": "",
+            "changelog": [],
+            "codeChanged": False,
+            "modules": [],
+            "conflicts": [],
+            "missingDeps": [],
+            "depFailures": [],
+            "applied": False,
+            "restartNeeded": False,
+            "error": None,
+        }
 
     apply = mode == "apply"
     try:
@@ -580,31 +606,45 @@ def run(mode, remote, config_root, take, install_ids):
     to_date = commit_date(clone, head)
     version = f"{short_sha(clone, head)} {to_date}"
 
-    # Install the chosen new packages first so the post-install scan reflects them,
-    # then report whatever is still missing. Detection runs in both modes.
-    dep_failures = install_missing_deps(clone, head, install_ids) if (apply and install_ids) else []
+    dep_failures = (
+        install_missing_deps(clone, head, install_ids)
+        if (apply and install_ids)
+        else []
+    )
     missing = detect_missing_deps(clone, head)
 
     if first_run:
         code_changed = sync_code(clone, config_root, head, apply)
-        rows = [{"name": module_name(rel), "path": rel, "state": "clean"}
-                for rel in PROTECTED]
+        rows = [
+            {"name": module_name(rel), "path": rel, "state": "clean"}
+            for rel in PROTECTED
+        ]
         if apply:
             baseline_modules(manifest, head)
             manifest["syncedSha"] = head
             save_manifest(manifest)
         return {
-            "status": "ok", "behind": behind, "fromDate": from_date, "toDate": to_date,
-            "version": version, "changelog": changelog, "codeChanged": code_changed,
-            "modules": rows, "conflicts": [], "missingDeps": missing,
-            "depFailures": dep_failures, "applied": apply,
-            "restartNeeded": code_changed, "error": None,
+            "status": "ok",
+            "behind": behind,
+            "fromDate": from_date,
+            "toDate": to_date,
+            "version": version,
+            "changelog": changelog,
+            "codeChanged": code_changed,
+            "modules": rows,
+            "conflicts": [],
+            "missingDeps": missing,
+            "depFailures": dep_failures,
+            "applied": apply,
+            "restartNeeded": code_changed,
+            "error": None,
         }
 
     if apply:
         backup_protected(config_root)
     rows, conflicts, sha_updates = reconcile_protected(
-        clone, config_root, manifest, head, apply, take)
+        clone, config_root, manifest, head, apply, take
+    )
     code_changed = sync_code(clone, config_root, head, apply)
 
     if apply:
@@ -614,20 +654,39 @@ def run(mode, remote, config_root, take, install_ids):
 
     protected_changed = any(r["state"] in ("update", "merged") for r in rows)
     return {
-        "status": "ok", "behind": behind, "fromDate": from_date, "toDate": to_date,
-        "version": version, "changelog": changelog, "codeChanged": code_changed,
-        "modules": rows, "conflicts": conflicts, "missingDeps": missing,
-        "depFailures": dep_failures, "applied": apply,
-        "restartNeeded": code_changed or protected_changed, "error": None,
+        "status": "ok",
+        "behind": behind,
+        "fromDate": from_date,
+        "toDate": to_date,
+        "version": version,
+        "changelog": changelog,
+        "codeChanged": code_changed,
+        "modules": rows,
+        "conflicts": conflicts,
+        "missingDeps": missing,
+        "depFailures": dep_failures,
+        "applied": apply,
+        "restartNeeded": code_changed or protected_changed,
+        "error": None,
     }
 
-
 def error_result(status, message):
-    return {"status": status, "behind": 0, "fromDate": "", "toDate": "", "version": "",
-            "changelog": [], "codeChanged": False, "modules": [], "conflicts": [],
-            "missingDeps": [], "depFailures": [], "applied": False,
-            "restartNeeded": False, "error": message}
-
+    return {
+        "status": status,
+        "behind": 0,
+        "fromDate": "",
+        "toDate": "",
+        "version": "",
+        "changelog": [],
+        "codeChanged": False,
+        "modules": [],
+        "conflicts": [],
+        "missingDeps": [],
+        "depFailures": [],
+        "applied": False,
+        "restartNeeded": False,
+        "error": message,
+    }
 
 def classify_git_failure(stderr):
     """
@@ -636,25 +695,31 @@ def classify_git_failure(stderr):
     both for the initial clone and any later git call so a network drop after fetch
     or a missing default branch does not surface as an opaque error.
     """
-    offline = any(s in stderr.lower() for s in
-                  ("could not resolve", "couldn't resolve", "network", "timed out",
-                   "connection", "unable to access", "failed to connect"))
+    offline = any(
+        s in stderr.lower()
+        for s in (
+            "could not resolve",
+            "couldn't resolve",
+            "network",
+            "timed out",
+            "connection",
+            "unable to access",
+            "failed to connect",
+        )
+    )
     if offline:
         return "offline"
     if not (data_dir() / ".git").exists():
         return "noclone"
     return "error"
 
-
 class BadArgs(Exception):
     """A flag was given without its value, surfaced as a normal error JSON."""
-
 
 def take_value(argv, i, flag):
     if i >= len(argv):
         raise BadArgs(f"{flag} expects a value")
     return argv[i]
-
 
 def parse_args(argv):
     mode = "check"
@@ -688,7 +753,6 @@ def parse_args(argv):
         i += 1
     return mode, remote, config_root, take, install_ids, sha
 
-
 def main(argv):
     """
     Always print exactly one JSON object and exit 0 on a handled error so the in-app
@@ -705,8 +769,13 @@ def main(argv):
         print(json.dumps(error_result("error", str(exc))))
         return 0
     except CorruptManifest as exc:
-        print(json.dumps(error_result(
-            "error", f"update manifest is corrupt and was left untouched: {exc}")))
+        print(
+            json.dumps(
+                error_result(
+                    "error", f"update manifest is corrupt and was left untouched: {exc}"
+                )
+            )
+        )
         return 0
     except subprocess.CalledProcessError as exc:
         err = (exc.stderr or "").strip()
@@ -718,6 +787,6 @@ def main(argv):
     print(json.dumps(result))
     return 0
 
-
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
+

@@ -59,3 +59,5 @@ message-bg-color: "#00000000"
     font  = "Cormorant Bold 26"
     color = "#c0a098"
 }
+
+

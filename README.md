@@ -99,3 +99,4 @@ If Ricelin made your setup nicer, you can [buy me a coffee on Ko-fi](https://ko-
 ## Credits
 
 The lock screen, the SDDM background and the wallpapers are not mine. See [CREDITS](configs/sddm/themes/torii/CREDITS.md).
+

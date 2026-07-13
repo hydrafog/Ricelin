@@ -9,6 +9,7 @@ the caller, so fallbacks.py and the in-app updater share one source of truth for
 how every distro is driven. The one place that does touch the system is
 is_installed, a read-only DB query.
 """
+
 import os
 import re
 import shlex
@@ -18,17 +19,14 @@ import tempfile
 
 import distro
 
-
-# Environment overrides the runner merges in for the apt path, so a package that
-# pops a debconf prompt mid-install can never wedge the unattended terminal run.
 INSTALL_ENV = {"DEBIAN_FRONTEND": "noninteractive"}
-
 
 def _require_family(family):
     """Guard against a family distro.PM never mapped, so a typo fails loud."""
     if family not in distro.PM:
-        raise ValueError(f"unknown family {family!r}, expected one of {tuple(distro.PM)}")
-
+        raise ValueError(
+            f"unknown family {family!r}, expected one of {tuple(distro.PM)}"
+        )
 
 def is_installed(name, family):
     """
@@ -42,15 +40,16 @@ def is_installed(name, family):
             r = subprocess.run(["pacman", "-Qq", name], capture_output=True, text=True)
             return r.returncode == 0
         if family == "debian":
-            r = subprocess.run(["dpkg-query", "-W", "-f=${Status}", name],
-                               capture_output=True, text=True)
+            r = subprocess.run(
+                ["dpkg-query", "-W", "-f=${Status}", name],
+                capture_output=True,
+                text=True,
+            )
             return "install ok installed" in r.stdout
-        # fedora and suse are both rpm underneath; rpm -q is the reliable check.
         r = subprocess.run(["rpm", "-q", name], capture_output=True, text=True)
         return r.returncode == 0
     except (OSError, subprocess.SubprocessError):
         return False
-
 
 def aur_helper():
     """The AUR helper on PATH, yay preferred over paru, or None when neither is."""
@@ -58,7 +57,6 @@ def aur_helper():
         if shutil.which(helper):
             return helper
     return None
-
 
 def install_argv(names, family, aur=False):
     """
@@ -72,7 +70,9 @@ def install_argv(names, family, aur=False):
         if aur:
             helper = aur_helper()
             if helper is None:
-                raise RuntimeError("no AUR helper on PATH, run ensure_aur_helper_steps first")
+                raise RuntimeError(
+                    "no AUR helper on PATH, run ensure_aur_helper_steps first"
+                )
             return [helper, "-S", "--needed", "--noconfirm", *names]
         return ["pacman", "-S", "--needed", "--noconfirm", *names]
     if family == "debian":
@@ -81,11 +81,9 @@ def install_argv(names, family, aur=False):
         return ["dnf", "install", "-y", *names]
     return ["zypper", "--non-interactive", "install", *names]
 
-
 def _version_id(os_release_path="/etc/os-release"):
     """The os-release VERSION_ID (e.g. 15.6 on Leap), or "" when unset, as on Tumbleweed."""
     return distro._os_release(os_release_path).get("VERSION_ID", "")
-
 
 def _obs_build_target(os_release_path="/etc/os-release"):
     """
@@ -102,7 +100,6 @@ def _obs_build_target(os_release_path="/etc/os-release"):
         return f"openSUSE_Leap_{version}"
     return "openSUSE_Tumbleweed"
 
-
 def _ubuntu_like(os_release_path="/etc/os-release"):
     """
     True when the box is Ubuntu or an Ubuntu derivative, read off ID and ID_LIKE.
@@ -112,7 +109,6 @@ def _ubuntu_like(os_release_path="/etc/os-release"):
     data = distro._os_release(os_release_path)
     ids = [data.get("ID", "").lower()] + data.get("ID_LIKE", "").lower().split()
     return "ubuntu" in ids
-
 
 def enable_repo_argv(repo, family):
     """
@@ -136,11 +132,14 @@ def enable_repo_argv(repo, family):
     _obs_build_target). The repo alias is the same path with ':' turned to '_'.
     """
     if repo.startswith("copr:") and family == "fedora":
-        owner_name = repo[len("copr:"):]
+        owner_name = repo[len("copr:") :]
         return [
-            ["sh", "-c",
-             "dnf install -y dnf-plugins-core 2>/dev/null; "
-             "dnf install -y dnf5-plugins 2>/dev/null; true"],
+            [
+                "sh",
+                "-c",
+                "dnf install -y dnf-plugins-core 2>/dev/null; "
+                "dnf install -y dnf5-plugins 2>/dev/null; true",
+            ],
             ["dnf", "copr", "enable", "-y", owner_name],
         ]
     if repo.startswith("ppa:") and family == "debian":
@@ -152,16 +151,17 @@ def enable_repo_argv(repo, family):
             ["apt-get", "update"],
         ]
     if repo.startswith("obs:") and family == "suse":
-        project = repo[len("obs:"):]
-        url = (f"https://download.opensuse.org/repositories/"
-               f"{project.replace(':', ':/')}/{_obs_build_target()}/")
+        project = repo[len("obs:") :]
+        url = (
+            f"https://download.opensuse.org/repositories/"
+            f"{project.replace(':', ':/')}/{_obs_build_target()}/"
+        )
         alias = project.replace(":", "_")
         return [
             ["zypper", "--non-interactive", "addrepo", url, alias],
             ["zypper", "--non-interactive", "--gpg-auto-import-keys", "refresh"],
         ]
     raise ValueError(f"cannot enable repo {repo!r} on family {family!r}")
-
 
 def refresh_argv(family):
     """
@@ -177,7 +177,6 @@ def refresh_argv(family):
     if family == "fedora":
         return ["sudo", "dnf", "makecache"]
     return ["sudo", "zypper", "--non-interactive", "refresh"]
-
 
 def ensure_aur_helper_steps():
     """
@@ -198,11 +197,13 @@ def ensure_aur_helper_steps():
     build_dir = shlex.quote(os.path.join(tempfile.gettempdir(), "ricelin-yay-build"))
     return [
         ["sudo", "pacman", "-S", "--needed", "--noconfirm", "git", "base-devel"],
-        ["sh", "-c",
-         f"rm -rf {build_dir} && git clone https://aur.archlinux.org/yay-bin.git {build_dir}"],
+        [
+            "sh",
+            "-c",
+            f"rm -rf {build_dir} && git clone https://aur.archlinux.org/yay-bin.git {build_dir}",
+        ],
         ["sh", "-c", f"cd {build_dir} && makepkg -si --noconfirm"],
     ]
-
 
 def privileged(argv, family):
     """
@@ -214,7 +215,6 @@ def privileged(argv, family):
     _require_family(family)
     return ["sudo", *argv]
 
-
 def _write_os_release(fields):
     """Write a throwaway os-release with these fields and return its path, for tests."""
     fd, path = tempfile.mkstemp(prefix="ricelin-osr-")
@@ -223,42 +223,72 @@ def _write_os_release(fields):
             fh.write(f'{k}="{v}"\n')
     return path
 
-
 def _selftest():
     checks = 0
 
-    assert install_argv(["foo"], "arch") == ["pacman", "-S", "--needed", "--noconfirm", "foo"]
+    assert install_argv(["foo"], "arch") == [
+        "pacman",
+        "-S",
+        "--needed",
+        "--noconfirm",
+        "foo",
+    ]
     checks += 1
-    assert install_argv(["foo", "bar"], "debian") == ["apt-get", "install", "-y", "foo", "bar"]
+    assert install_argv(["foo", "bar"], "debian") == [
+        "apt-get",
+        "install",
+        "-y",
+        "foo",
+        "bar",
+    ]
     checks += 1
     assert install_argv(["foo"], "fedora")[:3] == ["dnf", "install", "-y"]
     checks += 1
-    assert install_argv(["foo"], "suse") == ["zypper", "--non-interactive", "install", "foo"]
+    assert install_argv(["foo"], "suse") == [
+        "zypper",
+        "--non-interactive",
+        "install",
+        "foo",
+    ]
     checks += 1
 
     helper = aur_helper()
     if helper:
         assert install_argv(["dotool"], "arch", aur=True) == [
-            helper, "-S", "--needed", "--noconfirm", "dotool"]
+            helper,
+            "-S",
+            "--needed",
+            "--noconfirm",
+            "dotool",
+        ]
         checks += 1
 
     copr = enable_repo_argv("copr:solopasha/hyprland", "fedora")
     assert copr == [
-        ["sh", "-c",
-         "dnf install -y dnf-plugins-core 2>/dev/null; "
-         "dnf install -y dnf5-plugins 2>/dev/null; true"],
+        [
+            "sh",
+            "-c",
+            "dnf install -y dnf-plugins-core 2>/dev/null; "
+            "dnf install -y dnf5-plugins 2>/dev/null; true",
+        ],
         ["dnf", "copr", "enable", "-y", "solopasha/hyprland"],
     ]
     checks += 1
 
-    # Leap vs Tumbleweed build target is read off os-release, not hardcoded.
-    assert _obs_build_target(_write_os_release({"ID": "opensuse-leap", "VERSION_ID": "15.6"})) \
+    assert (
+        _obs_build_target(
+            _write_os_release({"ID": "opensuse-leap", "VERSION_ID": "15.6"})
+        )
         == "openSUSE_Leap_15.6"
-    assert _obs_build_target(_write_os_release({"ID": "opensuse-tumbleweed", "VERSION_ID": "20260626"})) \
+    )
+    assert (
+        _obs_build_target(
+            _write_os_release({"ID": "opensuse-tumbleweed", "VERSION_ID": "20260626"})
+        )
         == "openSUSE_Tumbleweed"
+    )
     checks += 2
 
-    # ppa gates on Ubuntu-likeness: full steps there, [] on plain Debian.
     ubuntu_osr = _write_os_release({"ID": "linuxmint", "ID_LIKE": "ubuntu debian"})
     debian_osr = _write_os_release({"ID": "debian"})
     assert _ubuntu_like(ubuntu_osr) is True
@@ -271,11 +301,20 @@ def _selftest():
     checks += 3
 
     obs = enable_repo_argv("obs:home:AvengeMedia:danklinux", "suse")
-    assert obs[0] == ["zypper", "--non-interactive", "addrepo",
-                      "https://download.opensuse.org/repositories/"
-                      "home:/AvengeMedia:/danklinux/%s/" % _obs_build_target(),
-                      "home_AvengeMedia_danklinux"]
-    assert obs[1] == ["zypper", "--non-interactive", "--gpg-auto-import-keys", "refresh"]
+    assert obs[0] == [
+        "zypper",
+        "--non-interactive",
+        "addrepo",
+        "https://download.opensuse.org/repositories/"
+        "home:/AvengeMedia:/danklinux/%s/" % _obs_build_target(),
+        "home_AvengeMedia_danklinux",
+    ]
+    assert obs[1] == [
+        "zypper",
+        "--non-interactive",
+        "--gpg-auto-import-keys",
+        "refresh",
+    ]
     checks += 2
 
     assert refresh_argv("arch") == ["sudo", "pacman", "-Sy"]
@@ -290,7 +329,6 @@ def _selftest():
     assert privileged(["pacman", "-S", "x"], "arch") == ["sudo", "pacman", "-S", "x"]
     checks += 1
 
-    # Real read-only queries against this Arch box prove the is_installed path works.
     assert is_installed("pacman", "arch") is True
     assert is_installed("bash", "arch") is True
     assert is_installed("definitely-not-a-real-pkg-xyz", "arch") is False
@@ -298,6 +336,6 @@ def _selftest():
 
     print(f"pkg.py selftest: {checks} checks passed")
 
-
 if __name__ == "__main__":
     _selftest()
+

@@ -10,3 +10,4 @@ video starts. The full-resolution version is available from the source link abov
 qylock SDDM theme collection: https://github.com/Darkkal44/qylock
 
 **Font:** Inter.
+

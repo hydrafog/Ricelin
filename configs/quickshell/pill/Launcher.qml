@@ -126,7 +126,15 @@ PillSurface {
                 root.usage[entry.id] = (root.usage[entry.id] || 0) + 1;
                 usageStore.setText(JSON.stringify(root.usage));
             }
-            entry.execute();
+            if (entry.command && entry.command.length > 0) {
+                var cmd = ["systemd-run", "--user", "--scope", "--"];
+                for (var i = 0; i < entry.command.length; i++) {
+                    cmd.push(entry.command[i]);
+                }
+                Quickshell.execDetached(cmd);
+            } else {
+                entry.execute();
+            }
         }
         root.requestClose();
     }

@@ -688,7 +688,7 @@ Item {
 
         layer.enabled: true
         layer.effect: MultiEffect {
-            shadowEnabled: true
+            shadowEnabled: false
             shadowColor: Qt.rgba(0, 0, 0, Theme.shadowOpacity)
             shadowBlur: 0.7
             shadowVerticalOffset: 3 * pill.s
@@ -1231,6 +1231,25 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 text: clock.hhmm
                 color: Theme.cream
+                font.family: Theme.font
+                font.pixelSize: 16 * pill.s
+                font.weight: Font.DemiBold
+                font.features: { "tnum": 1 }
+            }
+            Text {
+                visible: pill.specialView === "" && Battery.present
+                anchors.verticalCenter: parent.verticalCenter
+                text: "·"
+                color: Theme.subtle
+                font.family: Theme.font
+                font.pixelSize: 16 * pill.s
+                font.weight: Font.DemiBold
+            }
+            Text {
+                visible: pill.specialView === "" && Battery.present
+                anchors.verticalCenter: parent.verticalCenter
+                text: Battery.pct + "%"
+                color: Battery.low ? Theme.vermLit : (Battery.charging ? Theme.flameGlow : Theme.cream)
                 font.family: Theme.font
                 font.pixelSize: 16 * pill.s
                 font.weight: Font.DemiBold

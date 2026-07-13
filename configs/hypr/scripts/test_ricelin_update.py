@@ -5,33 +5,41 @@ network, no touching the user's real config. Builds a fake origin with a couple 
 commits (some carrying changelog: trailers, some not) and a fake live config, then
 drives check/apply through the engine and asserts the merge classes behave.
 """
+
 import importlib.util
 import os
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-spec = importlib.util.spec_from_file_location("ricelin_update", HERE / "ricelin-update.py")
+spec = importlib.util.spec_from_file_location(
+    "ricelin_update", HERE / "ricelin-update.py"
+)
 ru = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(ru)
 
-
 def git(repo, *args):
     env = dict(os.environ)
-    env.update({
-        "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
-        "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t",
-    })
-    subprocess.run(["git", "-C", str(repo), *args], check=True,
-                   capture_output=True, text=True, env=env)
-
+    env.update(
+        {
+            "GIT_AUTHOR_NAME": "t",
+            "GIT_AUTHOR_EMAIL": "t@t",
+            "GIT_COMMITTER_NAME": "t",
+            "GIT_COMMITTER_EMAIL": "t@t",
+        }
+    )
+    subprocess.run(
+        ["git", "-C", str(repo), *args],
+        check=True,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
 
 def write(path, text):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text)
-
 
 def main():
     tmp = Path(tempfile.mkdtemp())
@@ -51,8 +59,14 @@ def main():
     monitors = "configs/hypr/modules/monitors.lua"
     pill = "configs/quickshell/pill/Look.qml"
 
-    write(origin / binds, "bind one\nspacer\nspacer\nbind two\nspacer\nspacer\nbind three\n")
-    write(origin / monitors, "monitor A\nspacer\nspacer\nmonitor B\nspacer\nspacer\ntail\n")
+    write(
+        origin / binds,
+        "bind one\nspacer\nspacer\nbind two\nspacer\nspacer\nbind three\n",
+    )
+    write(
+        origin / monitors,
+        "monitor A\nspacer\nspacer\nmonitor B\nspacer\nspacer\ntail\n",
+    )
     write(origin / pill, "code v1\n")
     git(origin, "add", "-A")
     git(origin, "commit", "-q", "-m", "init")
@@ -65,20 +79,34 @@ def main():
     git(origin, "add", "-A")
     git(origin, "commit", "-q", "-m", "tidy up internals")
 
-    write(origin / binds, "bind one\nspacer\nspacer\nbind two changed upstream\nspacer\nspacer\nbind three\n")
-    write(origin / monitors, "monitor A\nspacer\nspacer\nmonitor B\nspacer\nspacer\nmonitor C upstream\n")
+    write(
+        origin / binds,
+        "bind one\nspacer\nspacer\nbind two changed upstream\nspacer\nspacer\nbind three\n",
+    )
+    write(
+        origin / monitors,
+        "monitor A\nspacer\nspacer\nmonitor B\nspacer\nspacer\nmonitor C upstream\n",
+    )
     git(origin, "add", "-A")
     git(origin, "commit", "-q", "-m", "config bump\n\nchangelog: new monitor preset")
 
     """First run baselines protected files and copies code, no merge yet."""
-    write(config / "hypr/modules/binds.lua", "bind one\nspacer\nspacer\nbind two\nspacer\nspacer\nbind three\n")
-    write(config / "hypr/modules/monitors.lua", "monitor A\nspacer\nspacer\nmonitor B\nspacer\nspacer\ntail\n")
+    write(
+        config / "hypr/modules/binds.lua",
+        "bind one\nspacer\nspacer\nbind two\nspacer\nspacer\nbind three\n",
+    )
+    write(
+        config / "hypr/modules/monitors.lua",
+        "monitor A\nspacer\nspacer\nmonitor B\nspacer\nspacer\ntail\n",
+    )
     write(config / "quickshell/pill/Look.qml", "stale local code\n")
 
     first = ru.run("apply", str(origin), config, set(), set())
     assert first["status"] == "ok", first
     assert first["applied"] is True
-    assert (config / "quickshell/pill/Look.qml").read_text() == "code v3\n", "code must overwrite"
+    assert (config / "quickshell/pill/Look.qml").read_text() == "code v3\n", (
+        "code must overwrite"
+    )
     assert ru.manifest_path().read_text(), "manifest written"
     print("first-run baseline + code overwrite: ok")
 
@@ -92,14 +120,21 @@ def main():
     base_before_bump = ru.git(data, "rev-parse", "HEAD~1").strip()
     head = ru.git(data, "rev-parse", "HEAD").strip()
     import json
+
     m = json.loads(ru.manifest_path().read_text())
     m["syncedSha"] = base_before_bump
-    m["modules"][binds[len("configs/"):]] = base_before_bump
-    m["modules"][monitors[len("configs/"):]] = base_before_bump
+    m["modules"][binds[len("configs/") :]] = base_before_bump
+    m["modules"][monitors[len("configs/") :]] = base_before_bump
     ru.manifest_path().write_text(json.dumps(m))
 
-    write(config / "hypr/modules/binds.lua", "bind one local\nspacer\nspacer\nbind two\nspacer\nspacer\nbind three\n")
-    write(config / "hypr/modules/monitors.lua", "monitor A\nspacer\nspacer\nmonitor B local\nspacer\nspacer\ntail\n")
+    write(
+        config / "hypr/modules/binds.lua",
+        "bind one local\nspacer\nspacer\nbind two\nspacer\nspacer\nbind three\n",
+    )
+    write(
+        config / "hypr/modules/monitors.lua",
+        "monitor A\nspacer\nspacer\nmonitor B local\nspacer\nspacer\ntail\n",
+    )
 
     res = ru.run("check", str(origin), config, set(), set())
     states = {r["name"]: r["state"] for r in res["modules"]}
@@ -112,31 +147,41 @@ def main():
 
     apply_res = ru.run("apply", str(origin), config, set(), set())
     binds_out = (config / "hypr/modules/binds.lua").read_text()
-    assert "bind one local" in binds_out and "bind two changed upstream" in binds_out, binds_out
+    assert "bind one local" in binds_out and "bind two changed upstream" in binds_out, (
+        binds_out
+    )
     assert "monitor C upstream" in (config / "hypr/modules/monitors.lua").read_text()
     print("merged write keeps both edits: ok")
 
     """Overlapping edit: reset base + diverge on the SAME line upstream changed."""
     m = json.loads(ru.manifest_path().read_text())
     m["syncedSha"] = base_before_bump
-    m["modules"][binds[len("configs/"):]] = base_before_bump
+    m["modules"][binds[len("configs/") :]] = base_before_bump
     ru.manifest_path().write_text(json.dumps(m))
-    write(config / "hypr/modules/binds.lua", "bind one\nspacer\nspacer\nbind two mine\nspacer\nspacer\nbind three\n")
+    write(
+        config / "hypr/modules/binds.lua",
+        "bind one\nspacer\nspacer\nbind two mine\nspacer\nspacer\nbind three\n",
+    )
     conflict_before = (config / "hypr/modules/binds.lua").read_text()
 
     conf = ru.run("apply", str(origin), config, set(), set())
     states = {r["name"]: r["state"] for r in conf["modules"]}
     assert states["binds"] == "conflict", states
-    assert binds[len("configs/"):] in conf["conflicts"], conf["conflicts"]
-    assert (config / "hypr/modules/binds.lua").read_text() == conflict_before, "conflict leaves live file untouched"
+    assert binds[len("configs/") :] in conf["conflicts"], conf["conflicts"]
+    assert (config / "hypr/modules/binds.lua").read_text() == conflict_before, (
+        "conflict leaves live file untouched"
+    )
     print("overlapping edit -> conflict, live file untouched: ok")
 
     """--take pulls the upstream version of a conflicting file wholesale."""
     m = json.loads(ru.manifest_path().read_text())
-    m["modules"][binds[len("configs/"):]] = base_before_bump
+    m["modules"][binds[len("configs/") :]] = base_before_bump
     ru.manifest_path().write_text(json.dumps(m))
-    taken = ru.run("apply", str(origin), config, {binds[len("configs/"):]}, set())
-    assert (config / "hypr/modules/binds.lua").read_text() == "bind one\nspacer\nspacer\nbind two changed upstream\nspacer\nspacer\nbind three\n"
+    taken = ru.run("apply", str(origin), config, {binds[len("configs/") :]}, set())
+    assert (
+        (config / "hypr/modules/binds.lua").read_text()
+        == "bind one\nspacer\nspacer\nbind two changed upstream\nspacer\nspacer\nbind three\n"
+    )
     print("--take overwrites conflicting file: ok")
 
     """
@@ -156,8 +201,13 @@ def main():
 
     rel_root = tmp / "relconfig"
     rel_root.mkdir(parents=True)
-    os.symlink(os.path.relpath(worktree / "configs/quickshell", rel_root), rel_root / "quickshell")
-    assert ru.is_devmode(rel_root) is True, "relative quickshell symlink must resolve to devmode"
+    os.symlink(
+        os.path.relpath(worktree / "configs/quickshell", rel_root),
+        rel_root / "quickshell",
+    )
+    assert ru.is_devmode(rel_root) is True, (
+        "relative quickshell symlink must resolve to devmode"
+    )
 
     plain_root = tmp / "plainconfig"
     (plain_root / "quickshell").mkdir(parents=True)
@@ -168,8 +218,9 @@ def main():
     H2: a trailing flag with no value must still emit one JSON object and exit 0,
     never a bare IndexError traceback. main parses args inside its guard now.
     """
-    import io
     import contextlib
+    import io
+
     buf = io.StringIO()
     with contextlib.redirect_stdout(buf):
         code = ru.main(["check", "--config-root", str(config), "--remote"])
@@ -192,11 +243,13 @@ def main():
     assert code == 0, code
     assert corrupt["status"] == "error", corrupt
     assert "corrupt" in corrupt["error"].lower(), corrupt
-    assert corrupt["modules"] == [] and corrupt["behind"] == 0, "must not masquerade as first run"
+    assert corrupt["modules"] == [] and corrupt["behind"] == 0, (
+        "must not masquerade as first run"
+    )
     print("M1 corrupt manifest -> error, not first run: ok")
 
     print("\nALL TESTS PASSED")
 
-
 if __name__ == "__main__":
     main()
+

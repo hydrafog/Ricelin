@@ -7,14 +7,9 @@ local function border(hex, fallback)
     return "rgb(" .. hex:gsub("#", "") .. ")"
 end
 
-local active   = border(wc and wc.active, "#e0563b")
-local inactive = border(wc and wc.inactive, "#313a4d")
+local active   = border(wc and wc.active, "919191")
+local inactive = active
 
---[[
-    Splash rendering SEGVs Hyprland (pango free in renderSplash) when a monitor
-    gets reconfigured while the splash would draw, e.g. a display apply from the
-    pill. Logo and splash off closes that crash surface.
-]]
 hl.config({
     misc = {
         disable_hyprland_logo    = true,

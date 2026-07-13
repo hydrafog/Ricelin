@@ -18,6 +18,7 @@ Under dry, each action is just {"desc", "cmd"} and nothing runs. Otherwise each
 action also carries {"ok", "detail"}: every step runs via sudo, failures are
 collected not raised, so the caller can report them and move on.
 """
+
 import os
 import shlex
 import subprocess
@@ -30,27 +31,32 @@ GRUB_DEFAULT = "/etc/default/grub"
 GRUB_BACKUP = "/etc/default/grub.ricelin-bak"
 GRUB_CFG = f"{GRUB_ROOT}/grub.cfg"
 
-
 def _plan(source):
     """The three actions, as (desc, cmd) pairs, with no side effects."""
     theme_src = os.path.join(source, "grub", "themes", THEME)
 
     copy = (
         f"Copy the torii GRUB theme to {THEME_DEST}",
-        ["sudo", "sh", "-c",
-         f"mkdir -p {shlex.quote(GRUB_ROOT)}/themes "
-         f"&& cp -rT {shlex.quote(theme_src)} {shlex.quote(THEME_DEST)}"],
+        [
+            "sudo",
+            "sh",
+            "-c",
+            f"mkdir -p {shlex.quote(GRUB_ROOT)}/themes "
+            f"&& cp -rT {shlex.quote(theme_src)} {shlex.quote(THEME_DEST)}",
+        ],
     )
 
-    # Back up the original grub default once (cp -n never clobbers an earlier
-    # backup), then replace an existing GRUB_THEME line or append a new one.
     set_theme = (
         f"Back up {GRUB_DEFAULT} and set GRUB_THEME",
-        ["sudo", "sh", "-c",
-         f'cp -n {shlex.quote(GRUB_DEFAULT)} {shlex.quote(GRUB_BACKUP)} 2>/dev/null || true; '
-         f'if grep -q "^GRUB_THEME=" {shlex.quote(GRUB_DEFAULT)} 2>/dev/null; then '
-         f'sed -i \'s|^GRUB_THEME=.*|GRUB_THEME="{THEME_TXT}"|\' {shlex.quote(GRUB_DEFAULT)}; '
-         f'else printf \'\\nGRUB_THEME="{THEME_TXT}"\\n\' >> {shlex.quote(GRUB_DEFAULT)}; fi'],
+        [
+            "sudo",
+            "sh",
+            "-c",
+            f"cp -n {shlex.quote(GRUB_DEFAULT)} {shlex.quote(GRUB_BACKUP)} 2>/dev/null || true; "
+            f'if grep -q "^GRUB_THEME=" {shlex.quote(GRUB_DEFAULT)} 2>/dev/null; then '
+            f"sed -i 's|^GRUB_THEME=.*|GRUB_THEME=\"{THEME_TXT}\"|' {shlex.quote(GRUB_DEFAULT)}; "
+            f"else printf '\\nGRUB_THEME=\"{THEME_TXT}\"\\n' >> {shlex.quote(GRUB_DEFAULT)}; fi",
+        ],
     )
 
     regen = (
@@ -59,7 +65,6 @@ def _plan(source):
     )
 
     return [copy, set_theme, regen]
-
 
 def _run(cmd):
     """Run one step, return (ok, detail). A bad step is a soft failure, never a raise."""
@@ -72,7 +77,6 @@ def _run(cmd):
         return False, f"exit {result.returncode}: {printable}"
     return True, ""
 
-
 def apply(source, dry):
     """
     Apply the torii GRUB theme from <source>/grub/themes/torii. Theme only, it
@@ -84,9 +88,6 @@ def apply(source, dry):
     if dry:
         return actions
 
-    # The caller already gated on bootloader == grub; guard anyway so a box with
-    # grub-mkconfig on PATH but no /boot/grub never gets a half-written theme, and
-    # a missing defaults file never gets fabricated as a one-line GRUB_THEME stub.
     if not os.path.isdir(GRUB_ROOT) or not os.path.isfile(GRUB_DEFAULT):
         missing = GRUB_ROOT if not os.path.isdir(GRUB_ROOT) else GRUB_DEFAULT
         for action in actions:
@@ -100,10 +101,10 @@ def apply(source, dry):
         action["detail"] = detail
     return actions
 
-
 if __name__ == "__main__":
     src = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "configs")
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "configs"
+    )
     out = apply(src, dry=True)
     assert len(out) == 3, f"expected 3 actions, got {len(out)}"
     for a in out:
@@ -111,3 +112,4 @@ if __name__ == "__main__":
         print(f"  {a['desc']}")
         print(f"    {' '.join(shlex.quote(x) for x in a['cmd'])}")
     print("selftest ok: 3 dry actions, all with cmd lists")
+

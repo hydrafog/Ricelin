@@ -1,8 +1,3 @@
--- Turns the user-defined spaces in modules.spaces into live Hyprland config: a
--- per-app window_rule routes a class into special:<id>, and a non-empty key binds
--- SUPER+<key> to toggle the space plus SUPER+SHIFT+<key> to send/retrieve the
--- focused window via the shared special-toggle.sh. Every field is guarded so a
--- malformed entry is skipped instead of breaking the whole config.
 
 local ok, spaces = pcall(require, "modules.spaces")
 if not ok or type(spaces) ~= "table" then
