@@ -1097,14 +1097,37 @@ Item {
             }
         }
 
-        Text {
+        Row {
             anchors.centerIn: parent
-            text: clock.hhmm
-            color: Theme.cream
-            font.family: Theme.font
-            font.pixelSize: 16 * pill.s
-            font.weight: Font.DemiBold
-            font.features: ({ "tnum": 1 })
+            spacing: 8 * pill.s
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: clock.hhmm
+                color: Theme.cream
+                font.family: Theme.font
+                font.pixelSize: 16 * pill.s
+                font.weight: Font.DemiBold
+                font.features: ({ "tnum": 1 })
+            }
+
+            GlyphIcon {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 14 * pill.s
+                height: 14 * pill.s
+                name: "gamepad"
+                color: gamepadHover.hovered ? Theme.vermLit : Theme.iconDim
+                opacity: gamepadHover.hovered ? 1.0 : 0.5
+                stroke: 1.5
+
+                HoverHandler {
+                    id: gamepadHover
+                    cursorShape: Qt.PointingHandCursor
+                }
+                TapHandler {
+                    onTapped: Flags.gameMode = false
+                }
+            }
         }
 
         /**
