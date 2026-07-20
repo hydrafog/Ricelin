@@ -209,8 +209,10 @@ def adjust_gray_ramp(b, on_bg):
         "base0f",
     ]:
         h, l, s = hex_to_hls(b[key])
-        if l < 0.50:
-            b[key] = hls_to_hex(h, 0.50, s)
+        s_target = max(s, 0.65)
+        l_target = max(l, 0.55)
+        b[key] = hls_to_hex(h, l_target, s_target)
+
 
 
 def render_fastfetch(pill):
@@ -574,6 +576,34 @@ button.suggested-action:checked:backdrop,
         (gtk_dir / "colors.css").write_text(gtk_colors)
 
 
+def write_nvim_colors(pill, b, on_bg):
+    """Write Neovim colorscheme lua file."""
+    lines = [
+        "return {",
+        f"    base00 = '{b['base00']}',",
+        f"    base01 = '{b['base01']}',",
+        f"    base02 = '{b['base02']}',",
+        f"    base03 = '{b['base03']}',",
+        f"    base04 = '{b['base04']}',",
+        f"    base05 = '{b['base05']}',",
+        f"    base06 = '{b['base06']}',",
+        f"    base07 = '{b['base07']}',",
+        f"    base08 = '{b['base08']}',",
+        f"    base09 = '{b['base09']}',",
+        f"    base0a = '{b['base0a']}',",
+        f"    base0b = '{b['base0b']}',",
+        f"    base0c = '{b['base0c']}',",
+        f"    base0d = '{b['base0d']}',",
+        f"    base0e = '{b['base0e']}',",
+        f"    base0f = '{b['base0f']}',",
+        f"    primary = '{pill['primary']}',",
+        f"    subtle = '{pill['subtle']}',",
+        f"    bright = '{pill['bright']}',",
+        "}"
+    ]
+    (CACHE / "nvim-colors.lua").write_text("\n".join(lines) + "\n")
+
+
 def reload_gtk_theme():
     """Toggle GTK theme and color-scheme to force running apps to reload CSS.
 
@@ -723,6 +753,7 @@ def main():
     write_ghostty_colors(pill, b, on_bg)
     write_btop_colors(pill, b, on_bg)
     write_gtk_colors(pill)
+    write_nvim_colors(pill, b, on_bg)
     reload_gtk_theme()
 
     return 0

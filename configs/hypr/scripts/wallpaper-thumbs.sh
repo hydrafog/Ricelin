@@ -14,7 +14,7 @@ for f in "$cache"/*.png; do
   [ -n "$(find "$wpdir" -type f -name "$base" -print -quit)" ] || rm -f "$f"
 done
 
-find "$wpdir" -type f \( -iname '*.jpg' -o -iname '*.png' \) | while IFS= read -r src; do
+find "$wpdir" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | while IFS= read -r src; do
   thumb="$cache/$(basename "$src").png"
   if [ ! -s "$thumb" ] || [ "$src" -nt "$thumb" ]; then
     magick "${src}[0]" -strip -resize 512x "png:$thumb.tmp" 2>/dev/null

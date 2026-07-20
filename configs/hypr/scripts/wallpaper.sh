@@ -21,7 +21,7 @@ ensure_daemon() {
 }
 
 list_pics() {
-  find "$WPDIR" -type f \( -iname '*.jpg' -o -iname '*.png' \)
+  find "$WPDIR" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \)
 }
 
 refill_bag() {
@@ -120,11 +120,24 @@ mkdir -p "$(dirname "$STATE")"
 printf '%s\n' "$pic" >"$STATE"
 
 sleep 0.15
-current_shader=$(hyprshade current 2>/dev/null || echo "")
-hyprctl reload >/dev/null 2>&1 || true
-if [ -n "$current_shader" ]; then
-  hyprshade on "$current_shader" >/dev/null 2>&1 || true
-fi
+# Update borders dynamically without full reload to prevent screen flashing/shader loss
+hyprctl eval '
+  local ok, wc = pcall(dofile, os.getenv("HOME") .. "/.cache/ricelin/hypr-colors.lua")
+  if ok and wc then
+    local c1 = wc.c1 or wc.active
+    local c2 = wc.c2 or wc.inactive
+    if c1 then c1 = "rgb(" .. c1:gsub("#", "") .. ")" end
+    if c2 then c2 = "rgb(" .. c2:gsub("#", "") .. ")" end
+    hl.config({
+      general = {
+        col = {
+          active_border = { colors = { c1, c2 }, angle = 45 },
+          inactive_border = { colors = { c1, c2 }, angle = 45 }
+        }
+      }
+    })
+  end
+' >/dev/null 2>&1 || true
 pkill -USR2 ghostty || true
 pkill -USR2 btop || true
 
