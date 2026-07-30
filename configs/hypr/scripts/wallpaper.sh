@@ -173,10 +173,13 @@ sync_videos() {
     desired=$(printf '%s' "$desired" | sort)
     actual=$(pgrep -ax mpvpaper 2>/dev/null | awk '{ print $(NF-1) "\t" $NF }' | sort || true)
     [ "$desired" = "$actual" ] && return 0
-    if pgrep -x mpvpaper >/dev/null 2>&1; then
-        pkill -x mpvpaper 2>/dev/null || true
+    if pgrep -x mpvpaper >/dev/null 2>&1 || pgrep -x mpv >/dev/null 2>&1 || pgrep -f mpvpaper >/dev/null 2>&1; then
+        pkill -9 -x mpvpaper 2>/dev/null || true
+        pkill -9 -x mpv 2>/dev/null || true
+        pkill -9 -f mpvpaper 2>/dev/null || true
+        pkill -9 -f "mpv.*wid" 2>/dev/null || true
         for _ in $(seq 1 10); do
-            pgrep -x mpvpaper >/dev/null 2>&1 || break
+            pgrep -x mpvpaper >/dev/null 2>&1 || pgrep -x mpv >/dev/null 2>&1 || break
             sleep 0.1
         done
     fi
