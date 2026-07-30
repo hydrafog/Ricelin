@@ -6,6 +6,7 @@ import QtQuick.Shapes
 import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
+import Quickshell.Bluetooth
 import Quickshell.Hyprland
 import "Singletons"
 
@@ -40,6 +41,8 @@ Item {
     readonly property bool powerOpen: surface === "power"
     readonly property bool mediaOpen: surface === "media"
     readonly property bool linkOpen: surface === "link"
+    readonly property bool wifiOpen: surface === "wifi"
+    readonly property bool btOpen: surface === "bt"
     readonly property bool batteryOpen: surface === "battery"
     readonly property bool settingsOpen: surface === "settings"
     readonly property bool keybindsOpen: surface === "keybinds"
@@ -60,21 +63,32 @@ Item {
         || lookOpen || inputOpen || displayOpen || animationOpen || idlelockOpen || fontpickerOpen
     readonly property bool hasMedia: Players.list.length > 0
 
-    /**
-     * Subview the link surface should land on when next opened. The wifi glance
-     * sets "wifi" to drill straight to the network list; the inbox glance and
-     * toast set "main". Reset once the surface closes so IPC opens land on main.
-     */
-    property string linkInitialView: "main"
-
     readonly property var netDevices: (typeof Networking !== "undefined" && Networking && Networking.devices) ? Networking.devices.values : []
     readonly property var wifiDev: netDevices.find(function(d) { return d && d.type === DeviceType.Wifi }) || null
     readonly property bool wifiOn: (typeof Networking !== "undefined" && Networking) ? Networking.wifiEnabled : false
     readonly property var wifiNets: (wifiDev && wifiDev.networks) ? wifiDev.networks.values : []
     readonly property var wifiActive: wifiNets.find(function(n) { return n && n.connected }) || null
     readonly property real wifiLevel: (wifiActive && wifiActive.signalStrength) || 0
+    readonly property var btAdapter: (typeof Bluetooth !== "undefined" && Bluetooth) ? Bluetooth.defaultAdapter : null
+    readonly property bool btOn: btAdapter ? btAdapter.enabled === true : false
     readonly property bool surfaceOpen: surface.length > 0
     property bool hoverLatch: false
+
+    /**
+     * False for the first seconds after the shell maps. Hyprland hands pointer
+     * focus to a freshly mapped layer surface at the cursor's position, which
+     * the window-level HoverHandler reads as a pill hover and latches the pill
+     * open (issue #20). Latching only after boot settles filters that spurious
+     * enter; a real hover during the window just expands late, harmlessly.
+     */
+    property bool bootSettled: false
+
+    Timer {
+        interval: 3000
+        running: true
+        onTriggered: pill.bootSettled = true
+    }
+
     readonly property bool expanded: surfaceOpen || held || hoverLatch
 
     /**
@@ -96,15 +110,15 @@ Item {
             if (ms[i] && ms[i].name === pill.screenName) {
                 var o = ms[i].lastIpcObject;
                 var sw = (o && o.specialWorkspace) ? o.specialWorkspace.name : "";
-                if (sw === "special:minimized") return "Minimized";
-                if (sw === "special:private") return "Private";
-                if (sw === "special:stash") return "Stash";
                 if (sw && sw.indexOf("special:") === 0) {
                     var id = sw.slice("special:".length);
                     var sl = Spaces.list;
                     for (var j = 0; j < sl.length; j++)
                         if (sl[j] && sl[j].id === id)
                             return sl[j].name;
+                    if (id === "minimized") return "Minimized";
+                    if (id === "private") return "Private";
+                    if (id === "stash") return "Stash";
                     return id.charAt(0).toUpperCase() + id.slice(1);
                 }
                 return "";
@@ -144,6 +158,8 @@ Item {
     readonly property real mediaW: (Players.pickable.length > 1 ? 460 : 390) * s
     readonly property real mediaH: 150 * s
     readonly property real batteryW: 316 * s
+    readonly property real wifiW: 272 * s
+    readonly property real btW: 286 * s
     readonly property real settingsW: 392 * s
     readonly property real keybindsW: 460 * s
     readonly property real workspacesW: 392 * s
@@ -204,6 +220,8 @@ Item {
         media:     { size: () => { surfaceItem(ldMedia); return Qt.size(mediaW, mediaH); }, ame: () => surfaceItem(ldMedia) },
         mixer:     { size: () => Qt.size(93 * Math.max(4, surfaceItem(ldMixer).faderCount) * s, mixerH), ame: () => surfaceItem(ldMixer) },
         link:      { size: () => { const it = surfaceItem(ldLink); return Qt.size(it.desiredW, it.implicitHeight + 26 * s); }, ame: () => surfaceItem(ldLink) },
+        wifi:      { size: () => Qt.size(wifiW, surfaceItem(ldWifi).implicitHeight + 26 * s), ame: () => surfaceItem(ldWifi) },
+        bt:        { size: () => Qt.size(btW, surfaceItem(ldBt).implicitHeight + 26 * s), ame: () => surfaceItem(ldBt) },
         battery:   { size: () => Qt.size(batteryW, surfaceItem(ldBattery).implicitHeight + 26 * s), ame: () => surfaceItem(ldBattery) },
         settings:  { size: () => Qt.size(settingsW, surfaceItem(ldSettings).implicitHeight + 29 * s), ame: () => surfaceItem(ldSettings) },
         keybinds:  { size: () => Qt.size(keybindsW, surfaceItem(ldKeybinds).implicitHeight + 29 * s), ame: () => surfaceItem(ldKeybinds) },
@@ -371,15 +389,6 @@ Item {
         ScreenRec.quickChoosing = false;
         ScreenRec.quickScreenChoosing = false;
         ScreenRec.prepareScreen(name);
-    }
-
-    /**
-     * Pop the open link surface one subview back. Returns true when the step was
-     * consumed, false when the surface is already at its root (or not open) and
-     * Escape should close the surface instead.
-     */
-    function linkBack() {
-        return (pill.linkOpen && ldLink.item) ? ldLink.item.back() : false;
     }
 
     /**
@@ -602,9 +611,17 @@ Item {
         NumberAnimation { target: pill; property: "kanjiFlash"; to: 0; duration: 320; easing.type: Easing.OutCubic }
     }
 
-    Behavior on width { NumberAnimation { duration: pill.hoverHop ? Motion.glide : Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
-    Behavior on height { NumberAnimation { duration: pill.hoverHop ? Motion.glide : Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
-    Behavior on morphRadius { NumberAnimation { duration: pill.hoverHop ? Motion.glide : Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
+    Behavior on width { NumberAnimation { id: morphAnimW; duration: pill.hoverHop ? Motion.glide : Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
+    Behavior on height { NumberAnimation { id: morphAnimH; duration: pill.hoverHop ? Motion.glide : Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
+    Behavior on morphRadius { NumberAnimation { id: morphAnimR; duration: pill.hoverHop ? Motion.glide : Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
+
+    /**
+     * True while any morph axis animates. The body's effect layer (live drop
+     * shadow) re-renders its offscreen buffer at every size step, on every
+     * monitor, so it is the top per-frame cost of a morph; dropping the shadow
+     * mid-flight and restoring it on settle keeps the morph cheap (issue #20).
+     */
+    readonly property bool morphing: morphAnimW.running || morphAnimH.running || morphAnimR.running
 
     Rectangle {
         id: bud
@@ -687,7 +704,7 @@ Item {
             GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Flags.pillOpacity) }
         }
 
-        layer.enabled: true
+        layer.enabled: !pill.morphing
         layer.effect: MultiEffect {
             shadowEnabled: false
             shadowColor: Qt.rgba(0, 0, 0, Theme.shadowOpacity)
@@ -730,6 +747,8 @@ Item {
         const drop = 12 * pill.s;
         if (soulTarget === "wifi")
             return wifiIcon.mapToItem(pill, wifiIcon.width / 2, wifiIcon.height + drop * 0.55);
+        if (soulTarget === "bt")
+            return btIcon.mapToItem(pill, btIcon.width / 2, btIcon.height + drop * 0.55);
         if (soulTarget === "battery")
             return batteryIcon.mapToItem(pill, batteryIcon.width / 2, batteryIcon.height + drop * 0.55);
         if (soulTarget === "inbox")
@@ -789,7 +808,8 @@ Item {
 
     onHoveredChanged: {
         if (hovered) {
-            hoverLatch = true;
+            if (bootSettled)
+                hoverLatch = true;
             graceTimer.stop();
         } else {
             graceTimer.restart();
@@ -823,21 +843,30 @@ Item {
         return decodeURIComponent(s);
     }
 
-    function appimagePaths(urls) {
+    readonly property var dropExt: /\.(appimage|deb|rpm|flatpakref|zip|tgz|txz|tbz2|ttf|otf|png|jpe?g|webp)$|\.(pkg\.)?tar\.(gz|xz|bz2|zst)$/i
+
+    function droppablePaths(urls) {
         var out = [];
         for (var i = 0; i < urls.length; i++)
-            if (/\.appimage$/i.test(String(urls[i])))
+            if (pill.dropExt.test(String(urls[i])))
                 out.push(pill.localPath(urls[i]));
         return out;
     }
 
     function dropLabel(urls) {
         var p = pill.localPath(urls.length ? urls[0] : "");
-        return p.substring(p.lastIndexOf("/") + 1).replace(/\.appimage$/i, "");
+        return p.substring(p.lastIndexOf("/") + 1).replace(pill.dropExt, "");
     }
 
     property bool installedAny: false
+    property bool installedApp: false
+    property bool installFailed: false
+    property string installKind: "app"
     property string installAction: "new"
+    property string installLine: ""
+    property string installProto: ""
+    property string installPct: ""
+    property int installSeconds: 0
 
     function runNextInstall() {
         if (pill.installQueue.length === 0) {
@@ -846,24 +875,69 @@ Item {
             return;
         }
         var next = pill.installQueue.shift();
-        pill.dragName = next.substring(next.lastIndexOf("/") + 1).replace(/\.appimage$/i, "");
-        installProc.command = ["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/appimage-install.sh", "install", next];
+        pill.dragName = next.substring(next.lastIndexOf("/") + 1).replace(pill.dropExt, "");
+        pill.installLine = "";
+        pill.installProto = "";
+        pill.installPct = "";
+        installProc.command = ["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/app-install.sh", "install", next];
         installProc.running = true;
     }
 
+    /**
+     * Streams installer stdout instead of collecting it: slow backends (flatpak
+     * runtime pulls, pacman) narrate their steps, and the drop face mirrors the
+     * newest line live. The machine-readable result is the one tab-separated
+     * kind-prefixed line, fished out of the stream as it passes.
+     */
     Process {
         id: installProc
-        stdout: StdioCollector { id: installOut }
+        stdout: SplitParser {
+            onRead: (data) => {
+                var seg = data.split("\r").pop().replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "").trim();
+                if (seg.length === 0)
+                    return;
+                if (/^(app|native|font|wallpaper)\t/.test(seg)) {
+                    pill.installProto = seg;
+                } else {
+                    pill.installLine = seg;
+                    var pct = seg.match(/(\d{1,3})\s*%/);
+                    if (pct && Number(pct[1]) <= 100)
+                        pill.installPct = pct[1] + "%";
+                }
+            }
+        }
         onExited: (exitCode) => {
-            if (exitCode === 0) {
+            if (exitCode === 0 && pill.installProto.length > 0) {
                 pill.installedAny = true;
-                var line = installOut.text.trim().split("\n").pop();
-                var parts = line.split("\t");
-                if (parts.length >= 3)
-                    pill.installAction = parts[2];
+                var parts = pill.installProto.split("\t");
+                pill.installKind = parts[0];
+                pill.installAction = parts[2];
+                if (parts[0] === "app" || parts[0] === "native")
+                    pill.installedApp = true;
+                if (parts[0] === "font" && parts.length >= 4)
+                    droppedFont.source = "file://" + parts[3];
+            } else {
+                pill.installFailed = true;
             }
             pill.runNextInstall();
         }
+    }
+
+    Timer {
+        interval: 1000
+        repeat: true
+        running: pill.dragStage === "installing"
+        onTriggered: pill.installSeconds++
+    }
+
+    /**
+     * Registers a just-dropped font in this running process; the fontconfig
+     * cache alone only reaches apps started later. Ready -> the font picker's
+     * family list refreshes and the new face shows up without a restart.
+     */
+    FontLoader {
+        id: droppedFont
+        onStatusChanged: if (status === FontLoader.Ready) Theme.refreshFonts()
     }
 
     Timer {
@@ -872,7 +946,8 @@ Item {
         onTriggered: {
             pill.dragActive = false;
             pill.dragStage = "";
-            pill.requestSurface("launcher");
+            if (pill.installedApp)
+                pill.requestSurface("launcher");
         }
     }
 
@@ -887,8 +962,9 @@ Item {
 
     /**
      * File drops land only on the resting pill; an open surface turns the pill
-     * into a fullscreen modal that swallows the drag before it can start. An
-     * AppImage kicks off the install, anything else flashes a rejection.
+     * into a fullscreen modal that swallows the drag before it can start.
+     * app-install.sh routes each drop by type (apps install, fonts land in the
+     * font dir, images become the wallpaper), anything else flashes a rejection.
      */
     DropArea {
         anchors.fill: parent
@@ -897,7 +973,7 @@ Item {
         onEntered: (drag) => {
             drag.acceptProposedAction();
             pill.dragActive = true;
-            pill.dragStage = pill.appimagePaths(drag.urls).length > 0 ? "hover" : "bad";
+            pill.dragStage = pill.droppablePaths(drag.urls).length > 0 ? "hover" : "bad";
             pill.dragName = pill.dropLabel(drag.urls);
         }
         onExited: {
@@ -908,8 +984,8 @@ Item {
         }
         onDropped: (drop) => {
             drop.acceptProposedAction();
-            var appimages = pill.appimagePaths(drop.urls);
-            if (appimages.length === 0) {
+            var files = pill.droppablePaths(drop.urls);
+            if (files.length === 0) {
                 pill.dragActive = true;
                 pill.dragStage = "bad";
                 pill.dragName = pill.dropLabel(drop.urls);
@@ -919,8 +995,12 @@ Item {
             pill.dragActive = true;
             pill.dragStage = "installing";
             pill.installedAny = false;
+            pill.installedApp = false;
+            pill.installFailed = false;
+            pill.installKind = "app";
             pill.installAction = "new";
-            pill.installQueue = appimages;
+            pill.installSeconds = 0;
+            pill.installQueue = files;
             pill.runNextInstall();
         }
     }
@@ -1011,11 +1091,16 @@ Item {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: pill.dragStage === "bad" ? "Not an AppImage"
+                text: pill.dragStage === "bad" ? "Can't install this"
                     : (pill.dragStage === "fail" ? "Install failed"
-                    : (pill.dragStage === "installing" ? "Installing"
-                    : (pill.dragStage === "done" ? (pill.installAction === "updated" ? "Updated"
-                        : (pill.installAction === "reinstalled" ? "Reinstalled" : "Installed"))
+                    : (pill.dragStage === "installing" ? ("Installing"
+                        + (pill.installPct.length > 0 ? " " + pill.installPct : "")
+                        + (pill.installSeconds >= 3 ? "  " + Math.floor(pill.installSeconds / 60) + ":" + String(pill.installSeconds % 60).padStart(2, "0") : ""))
+                    : (pill.dragStage === "done" ? (pill.installFailed ? "Installed, some failed"
+                        : (!pill.installedApp && pill.installKind === "wallpaper" ? "Wallpaper set"
+                        : (!pill.installedApp && pill.installKind === "font" ? "Font installed"
+                        : (pill.installAction === "updated" ? "Updated"
+                        : (pill.installAction === "reinstalled" ? "Reinstalled" : "Installed")))))
                     : "Drop to install")))
                 color: Theme.cream
                 font.family: Theme.font
@@ -1027,7 +1112,7 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
-                text: pill.dragName
+                text: pill.dragStage === "installing" && pill.installLine.length > 0 ? pill.installLine : pill.dragName
                 color: Theme.subtle
                 font.family: Theme.font
                 font.pixelSize: 11 * pill.s
@@ -1485,21 +1570,22 @@ Item {
 
                 Row {
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: (pill.wifiDev !== null && pill.wifiOn) || Battery.present
+                    visible: pill.wifiDev !== null || pill.btAdapter !== null || Battery.present
                     spacing: 12 * pill.s
 
                     Item {
                         id: wifiIcon
                         anchors.verticalCenter: parent.verticalCenter
-                        visible: pill.wifiDev !== null && pill.wifiOn
-                        width: 17 * pill.s
-                        height: 17 * pill.s
+                        visible: pill.wifiDev !== null
+                        width: 15 * pill.s
+                        height: 15 * pill.s
 
                         WifiGlyph {
                             anchors.centerIn: parent
                             s: pill.s
                             level: pill.wifiLevel
                             on: pill.wifiOn
+                            stroke: 1.7
                         }
 
                         MouseArea {
@@ -1508,12 +1594,52 @@ Item {
                             anchors.margins: -6 * pill.s
                             hoverEnabled: true
                             enabled: hover.live
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                pill.linkInitialView = "wifi";
-                                pill.requestSurface("link");
+                            onClicked: (e) => {
+                                if (e.button === Qt.RightButton) {
+                                    if (typeof Networking !== "undefined" && Networking)
+                                        Networking.wifiEnabled = !Networking.wifiEnabled;
+                                    return;
+                                }
+                                pill.requestSurface("wifi");
                             }
                             onContainsMouseChanged: if (containsMouse) pill.soulTarget = "wifi"
+                        }
+                    }
+
+                    Item {
+                        id: btIcon
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: pill.btAdapter !== null
+                        width: 15 * pill.s
+                        height: 15 * pill.s
+
+                        GlyphIcon {
+                            anchors.fill: parent
+                            name: "bluetooth"
+                            color: btArea.containsMouse ? Theme.cream
+                                : (pill.btOn ? Theme.iconDim : Qt.alpha(Theme.iconDim, 0.4))
+                            stroke: 1.7
+                        }
+
+                        MouseArea {
+                            id: btArea
+                            anchors.fill: parent
+                            anchors.margins: -6 * pill.s
+                            hoverEnabled: true
+                            enabled: hover.live
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: (e) => {
+                                if (e.button === Qt.RightButton) {
+                                    if (pill.btAdapter)
+                                        pill.btAdapter.enabled = !pill.btAdapter.enabled;
+                                    return;
+                                }
+                                pill.requestSurface("bt");
+                            }
+                            onContainsMouseChanged: if (containsMouse) pill.soulTarget = "bt"
                         }
                     }
 
@@ -1580,10 +1706,7 @@ Item {
                         hoverEnabled: true
                         enabled: hover.live
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            pill.linkInitialView = "main";
-                            pill.requestSurface("link");
-                        }
+                        onClicked: pill.requestSurface("link")
                         onContainsMouseChanged: if (containsMouse) pill.soulTarget = "inbox"
                     }
                 }
@@ -1853,13 +1976,34 @@ Item {
         sourceComponent: Link {
             s: pill.s
             open: pill.linkOpen
-            initialView: pill.linkInitialView
             morphCloseness: pill.morphCloseness
             onRequestClose: pill.requestClose()
         }
     }
 
-    onLinkOpenChanged: if (!linkOpen) linkInitialView = "main"
+    Loader {
+        id: ldWifi
+        active: false
+        anchors.fill: parent
+        sourceComponent: WifiSurface {
+            s: pill.s
+            open: pill.wifiOpen
+            morphCloseness: pill.morphCloseness
+            onRequestClose: pill.requestClose()
+        }
+    }
+
+    Loader {
+        id: ldBt
+        active: false
+        anchors.fill: parent
+        sourceComponent: BtSurface {
+            s: pill.s
+            open: pill.btOpen
+            morphCloseness: pill.morphCloseness
+            onRequestClose: pill.requestClose()
+        }
+    }
 
     Loader {
         id: ldBattery

@@ -10,6 +10,8 @@ import Quickshell.Io
  */
 Singleton {
     readonly property string paletteMode: adapter.paletteMode
+    readonly property bool time12h: adapter.time12h
+    readonly property real topGap: adapter.topGap
 
     FileView {
         path: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/ricelin/flags.json"
@@ -22,6 +24,8 @@ Singleton {
         JsonAdapter {
             id: adapter
             property string paletteMode: "static"
+            property bool time12h: false
+            property real topGap: 1.0
         }
     }
 }

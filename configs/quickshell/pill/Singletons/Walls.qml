@@ -4,7 +4,7 @@ import Quickshell
 import Quickshell.Io
 
 /**
- * Wallpaper bridge: keeps a warm in-memory snapshot of ~/Ricelin/wallpapers so
+ * Wallpaper bridge: keeps a warm in-memory snapshot of the wallpaper folder so
  * the wallpaper strip opens instantly without shelling out on demand. A
  * refresh first runs the thumbnail script (generating missing 512px previews
  * and pruning ones whose source is gone), then re-lists the directory
@@ -14,6 +14,11 @@ import Quickshell.Io
  * arriving while the pipeline runs sets `pending` and replays once the state
  * lands. Applying routes through wallpaper.sh so the picker shares the exact
  * transition, palette and state path with the random keybind.
+ *
+ * The folder resolves through one chain, first hit wins: an explicit
+ * `wallpaperDir` in flags.json, then the dir wallpaper.sh resolved and wrote
+ * to the ricelin-wallpaper-dir state file on its last run, then
+ * ~/Ricelin/wallpapers for a first boot before wallpaper.sh init has run.
  *
  * Entries are plain objects: { path, name, mtime, thumb } where path is the
  * absolute source file, mtime its modification time in epoch seconds and
@@ -26,20 +31,51 @@ Singleton {
     readonly property int count: entries.length
     property string current: ""
     property bool pending: false
-    property int thumbGeneration: 0
 
-    readonly property string wpDir: Flags.wallpaperDir.length > 0 ? Flags.wallpaperDir : (Quickshell.env("HOME") + "/Ricelin/wallpapers")
+    property string resolvedDir: ""
+    readonly property string wpDir: Flags.wallpaperDir.length > 0 ? Flags.wallpaperDir
+        : (resolvedDir.length > 0 ? resolvedDir : Quickshell.env("HOME") + "/Ricelin/wallpapers")
     readonly property string thumbDir: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/ricelin-wp-thumbs/"
     readonly property string thumbScript: Quickshell.env("HOME") + "/.config/hypr/scripts/wallpaper-thumbs.sh"
     readonly property string setScript: Quickshell.env("HOME") + "/.config/hypr/scripts/wallpaper.sh"
     readonly property string stateFile: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/ricelin-wallpaper"
+    readonly property string dirStateFile: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/ricelin-wallpaper-dir"
+
+    onWpDirChanged: refresh()
+
+    FileView {
+        id: dirFile
+        path: root.dirStateFile
+        blockLoading: true
+        watchChanges: true
+        printErrors: false
+        onLoaded: root.resolvedDir = dirFile.text().trim()
+        onFileChanged: reload()
+        onLoadFailed: root.resolvedDir = ""
+    }
 
     function refresh() {
-        if (thumbProc.running || listProc.running || stateProc.running) {
+        if (resolveProc.running || thumbProc.running || listProc.running || stateProc.running) {
             pending = true;
             return;
         }
-        listProc.running = true;
+        /**
+         * Re-resolve the folder first when autodetect is in play: it only runs
+         * inside wallpaper.sh, so a shell restart used to leave the strip on
+         * the stale state file. An explicit folder skips that hop entirely and
+         * swaps straight away.
+         */
+        if (Flags.wallpaperDir.length > 0) {
+            thumbProc.running = true;
+            return;
+        }
+        resolveProc.command = ["bash", root.setScript, "resolve"];
+        resolveProc.running = true;
+    }
+
+    Process {
+        id: resolveProc
+        onExited: thumbProc.running = true
     }
 
     /**
@@ -49,13 +85,18 @@ Singleton {
      * running transition exits, so rapid iteration converges on the last pick.
      */
     property string queuedApply: ""
+    property string queuedOutput: ""
 
-    function apply(path) {
+    function apply(path, output) {
+        var out = output === undefined ? "" : output;
         if (applyProc.running) {
             queuedApply = path;
+            queuedOutput = out;
             return;
         }
-        applyProc.command = ["bash", root.setScript, "set", path];
+        applyProc.command = out.length > 0
+            ? ["bash", root.setScript, "set", path, out]
+            : ["bash", root.setScript, "set", path];
         applyProc.running = true;
     }
 
@@ -80,22 +121,16 @@ Singleton {
     Process {
         id: thumbProc
         command: ["sh", root.thumbScript]
-        onExited: {
-            // Thumbs are now on disk — list wallpapers so Image never sees a
-            // missing file on first open.
-            root.thumbGeneration++;
-            listProc.running = true;
-        }
+        onExited: listProc.running = true
     }
 
     Process {
         id: listProc
-        command: ["sh", "-c", "find \"$1\" -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \\) -printf '%T@\\t%p\\n' | sort -rn", "_", root.wpDir]
+        command: ["sh", "-c", "find \"$1\" -type f \\( -iname '*.jpg' -o -iname '*.png' -o -iname '*.gif' -o -iname '*.webp' -o -iname '*.mp4' -o -iname '*.webm' -o -iname '*.mkv' -o -iname '*.mov' \\) -printf '%T@\\t%p\\n' | sort -rn", "_", root.wpDir]
         stdout: StdioCollector {
             onStreamFinished: {
                 var lines = this.text.split("\n");
                 var out = [];
-                var gen = root.thumbGeneration;
                 for (var i = 0; i < lines.length; i++) {
                     var tab = lines[i].indexOf("\t");
                     if (tab < 1)
@@ -106,7 +141,7 @@ Singleton {
                         path: path,
                         name: name,
                         mtime: parseFloat(lines[i].substring(0, tab)),
-                        thumb: root.thumbDir + name + ".png?gen=" + gen
+                        thumb: root.thumbDir + name + ".png"
                     });
                 }
                 root.entries = out;
@@ -134,8 +169,12 @@ Singleton {
         onExited: {
             if (root.queuedApply.length) {
                 var next = root.queuedApply;
+                var nextOut = root.queuedOutput;
                 root.queuedApply = "";
-                applyProc.command = ["bash", root.setScript, "set", next];
+                root.queuedOutput = "";
+                applyProc.command = nextOut.length > 0
+                    ? ["bash", root.setScript, "set", next, nextOut]
+                    : ["bash", root.setScript, "set", next];
                 applyProc.running = true;
                 return;
             }
@@ -143,9 +182,5 @@ Singleton {
         }
     }
 
-    Component.onCompleted: {
-        // Run thumbProc first; when it exits it starts listProc, so entries
-        // are only populated once thumbnails already exist on disk.
-        thumbProc.running = true;
-    }
+    Component.onCompleted: refresh()
 }

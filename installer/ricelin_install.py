@@ -16,7 +16,6 @@ rest), and prints a report at the end.
 path and is meant to work headless. --quickstart skips the wizard and takes the
 Quick-profile defaults, so it pairs with --dry-run for a non-interactive check.
 """
-
 import argparse
 import getpass
 import os
@@ -33,6 +32,7 @@ import fallbacks
 import grub_theme
 import pkg
 import tui
+
 
 def _run(argv, dry, env=None):
     """
@@ -57,6 +57,7 @@ def _run(argv, dry, env=None):
         return False, f"exit {result.returncode}: {printable}"
     return True, ""
 
+
 def _shell(cmd, dry):
     """Run a shell step (a pipe or a redirect), or print it under a dry run."""
     if dry:
@@ -70,6 +71,7 @@ def _shell(cmd, dry):
         return False, f"exit {result.returncode}: {cmd}"
     return True, ""
 
+
 def _compositor():
     """The running Wayland session, read off the environment the rice sets."""
     if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"):
@@ -77,6 +79,7 @@ def _compositor():
     if os.environ.get("NIRI_SOCKET"):
         return "Niri"
     return os.environ.get("XDG_CURRENT_DESKTOP") or "Unknown"
+
 
 def _bootloader():
     """
@@ -88,13 +91,11 @@ def _bootloader():
         return "grub"
     if os.path.isdir("/boot/loader/entries") or shutil.which("bootctl"):
         return "systemd-boot"
-    if (
-        os.path.isfile("/boot/limine.conf")
-        or os.path.isfile("/boot/limine/limine.conf")
-        or shutil.which("limine")
-    ):
+    if (os.path.isfile("/boot/limine.conf")
+            or os.path.isfile("/boot/limine/limine.conf") or shutil.which("limine")):
         return "limine"
     return "other"
+
 
 def _has_display_manager():
     """True when a login manager is set up, so the SDDM theme prompt makes sense."""
@@ -102,14 +103,14 @@ def _has_display_manager():
         return True
     return any(shutil.which(dm) for dm in ("sddm", "gdm", "lightdm", "ly", "greetd"))
 
+
 def _active(unit):
     """Read-only check whether a systemd unit is active right now."""
     try:
-        return (
-            subprocess.run(["systemctl", "is-active", "--quiet", unit]).returncode == 0
-        )
+        return subprocess.run(["systemctl", "is-active", "--quiet", unit]).returncode == 0
     except OSError:
         return False
+
 
 def detect():
     """Read the whole machine state the flow branches on into one dict."""
@@ -126,6 +127,7 @@ def detect():
         "immutable": distro.is_immutable(),
     }
 
+
 def _default_choices(args, info, manifest):
     """The non-interactive choices for --quickstart and the no-terminal fallback."""
     full_ids = {p["id"] for p in manifest["packages"] if p.get("group") == "full"}
@@ -140,6 +142,7 @@ def _default_choices(args, info, manifest):
         "brave": args.brave,
     }
 
+
 def _wizard(args, info, manifest):
     """
     Walk the few questions that shape the install. Raises RuntimeError up from the
@@ -147,28 +150,20 @@ def _wizard(args, info, manifest):
     """
     family = info["family"]
 
-    pidx = tui.select_one(
-        "Install profile",
-        [
-            ("Quick", "Core rice, sensible defaults, no questions", True),
-            ("Full", "Everything, plus the daily apps", False),
-            ("Custom", "Walk every choice yourself", False),
-        ],
-        default=1 if args.full else 0,
-    )
+    pidx = tui.select_one("Install profile", [
+        ("Quick", "Core rice, sensible defaults, no questions", True),
+        ("Full", "Everything, plus the daily apps", False),
+        ("Custom", "Walk every choice yourself", False),
+    ], default=1 if args.full else 0)
     profile = ("quick", "full", "custom")[pidx]
 
     aur_choice = "yay"
     if family == "arch":
-        aidx = tui.select_one(
-            "AUR helper",
-            [
-                ("yay", "Build AUR packages with yay", True),
-                ("paru", "Build AUR packages with paru", False),
-                ("None", "Skip the AUR, use fallbacks instead", False),
-            ],
-            default=0,
-        )
+        aidx = tui.select_one("AUR helper", [
+            ("yay", "Build AUR packages with yay", True),
+            ("paru", "Build AUR packages with paru", False),
+            ("None", "Skip the AUR, use fallbacks instead", False),
+        ], default=0)
         aur_choice = ("yay", "paru", "none")[aidx]
 
     full_pkgs = [p for p in manifest["packages"] if p.get("group") == "full"]
@@ -181,51 +176,33 @@ def _wizard(args, info, manifest):
 
     sddm = True if args.sddm else False
     if not args.sddm and _has_display_manager():
-        sddm = tui.confirm(
-            "SDDM login theme",
-            [
-                "Install the torii SDDM login theme. (Recommended)",
-                "A system change that needs sudo.",
-            ],
-        )
+        sddm = tui.confirm("SDDM login theme", [
+            "Install the torii SDDM login theme. (Recommended)",
+            "A system change that needs sudo.",
+        ])
 
     grub = False
     if info["bootloader"] == "grub":
-        grub = tui.confirm(
-            "GRUB theme",
-            [
-                "Install the Ricelin GRUB theme.",
-                "Theme only, it does not touch your boot entries.",
-            ],
-        )
+        grub = tui.confirm("GRUB theme", [
+            "Install the Ricelin GRUB theme.",
+            "Theme only, it does not touch your boot entries.",
+        ])
 
     brave = True if args.brave else False
     if not args.brave:
-        bidx = tui.select_one(
-            "Brave browser",
-            [
-                (
-                    "Install Brave",
-                    "Brave browser with the matching Ricelin theme",
-                    True,
-                ),
-                ("Skip", "Leave Brave out for now", False),
-            ],
-            default=1,
-        )
+        bidx = tui.select_one("Brave browser", [
+            ("Install Brave", "Brave browser with the matching Ricelin theme", True),
+            ("Skip", "Leave Brave out for now", False),
+        ], default=1)
         brave = bidx == 0
 
     fish = tui.confirm("Login shell", ["Set fish as your login shell. (Recommended)"])
 
     return {
-        "profile": profile,
-        "aur_choice": aur_choice,
-        "optional_ids": optional_ids,
-        "sddm": sddm,
-        "grub": grub,
-        "fish": fish,
-        "brave": brave,
+        "profile": profile, "aur_choice": aur_choice, "optional_ids": optional_ids,
+        "sddm": sddm, "grub": grub, "fish": fish, "brave": brave,
     }
+
 
 def _build_plan(manifest, info, choices):
     """
@@ -243,6 +220,7 @@ def _build_plan(manifest, info, choices):
         rows = [r for r in rows if r["group"] == "core" or r["id"] in optional]
 
     repos, native, aur, fb, skipped = [], [], [], [], []
+    optional_native = set()
     for r in rows:
         if r["action"] == "skip":
             continue
@@ -258,13 +236,11 @@ def _build_plan(manifest, info, choices):
         if r["repo"] and r["repo"] not in repos:
             repos.append(r["repo"])
         (aur if r["aur"] else native).append(r["target"])
-    return {
-        "repos": repos,
-        "native": native,
-        "aur": aur,
-        "fallbacks": fb,
-        "skipped": skipped,
-    }
+        if not r["aur"] and not r["required"]:
+            optional_native.add(r["target"])
+    return {"repos": repos, "native": native, "aur": aur, "fallbacks": fb,
+            "skipped": skipped, "optional_native": optional_native}
+
 
 def _aur_install_argv(names, family, aur_choice):
     """
@@ -277,28 +253,21 @@ def _aur_install_argv(names, family, aur_choice):
     helper = aur_choice if aur_choice in ("yay", "paru") else "yay"
     return [helper, "-S", "--needed", "--noconfirm", *names]
 
+
 def _service_note(init):
     """The manual service commands for a non-systemd init, printed not run."""
     cmds = {
-        "openrc": [
-            "sudo rc-update add NetworkManager default && sudo rc-service NetworkManager start",
-            "sudo rc-update add bluetoothd default && sudo rc-service bluetoothd start",
-        ],
-        "runit": [
-            "sudo ln -s /etc/sv/NetworkManager /var/service",
-            "sudo ln -s /etc/sv/bluetoothd /var/service",
-        ],
-        "dinit": [
-            "sudo dinitctl enable NetworkManager",
-            "sudo dinitctl enable bluetoothd",
-        ],
+        "openrc": ["sudo rc-update add NetworkManager default && sudo rc-service NetworkManager start",
+                   "sudo rc-update add bluetoothd default && sudo rc-service bluetoothd start"],
+        "runit": ["sudo ln -s /etc/sv/NetworkManager /var/service",
+                  "sudo ln -s /etc/sv/bluetoothd /var/service"],
+        "dinit": ["sudo dinitctl enable NetworkManager", "sudo dinitctl enable bluetoothd"],
         "s6": ["s6-rc -u change NetworkManager", "s6-rc -u change bluetoothd"],
     }
     lines = ["Non-systemd init detected, enable the services yourself:"]
-    lines += cmds.get(
-        init, ["Enable NetworkManager and bluetooth with your init's tools."]
-    )
+    lines += cmds.get(init, ["Enable NetworkManager and bluetooth with your init's tools."])
     return lines
+
 
 def sudo_keepalive():
     """
@@ -311,14 +280,12 @@ def sudo_keepalive():
 
     def _loop():
         while not stop.wait(60):
-            subprocess.run(
-                ["sudo", "-n", "-v"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
+            subprocess.run(["sudo", "-n", "-v"],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     threading.Thread(target=_loop, daemon=True).start()
     return stop.set
+
 
 def _summary_lines(info, choices, plan, args, do_pkgs):
     """The go/no-go summary the Ready confirm shows."""
@@ -327,9 +294,7 @@ def _summary_lines(info, choices, plan, args, do_pkgs):
         lines.append("Skipping packages, deploying configs only.")
     else:
         count = len(plan["native"]) + len(plan["aur"]) + len(plan["fallbacks"])
-        lines.append(
-            f"Install {count} packages ({len(plan['skipped'])} already present)."
-        )
+        lines.append(f"Install {count} packages ({len(plan['skipped'])} already present).")
         if plan["repos"]:
             lines.append("Enable repos: " + ", ".join(plan["repos"]) + ".")
         if plan["fallbacks"]:
@@ -349,6 +314,7 @@ def _summary_lines(info, choices, plan, args, do_pkgs):
         lines.append("Back up and deploy the Ricelin config.")
     return lines
 
+
 def _is_update(info):
     """
     True when this run lands on top of an earlier Ricelin deploy, spotted by the
@@ -358,6 +324,7 @@ def _is_update(info):
     """
     existing = info["existing"]
     return any(existing.get(name, {}).get("managed") for name in ("hypr", "quickshell"))
+
 
 def seed_wallpapers(dry):
     """
@@ -397,6 +364,7 @@ def seed_wallpapers(dry):
     except OSError as exc:
         return False, f"{exc}: seed wallpapers"
 
+
 def bridge_wallpaper_binary(dry):
     """
     Point the rice's awww binary at swww. The wallpaper scripts call awww and
@@ -433,6 +401,7 @@ def bridge_wallpaper_binary(dry):
     print(f"  bridged: awww -> {swww} (in {bindir})")
     return True, "", True
 
+
 def link_ricelin_cli(dry):
     """
     Put the `ricelin` control CLI on PATH. The script ships inside the deployed
@@ -457,6 +426,7 @@ def link_ricelin_cli(dry):
     print(f"  linked: ricelin -> {target}")
     return True, "", True
 
+
 def deploy_brave_theme(source, dry):
     """
     Copy the bundled Brave theme into ~/.config/ricelin so the user can point
@@ -480,6 +450,7 @@ def deploy_brave_theme(source, dry):
     print(f"  deployed: brave-theme -> {dest_show}")
     return True, ""
 
+
 def _seed_update_baseline(source, config_root, dry):
     """
     Hand the in-app updater the commit just installed, so its first check counts new
@@ -500,10 +471,7 @@ def _seed_update_baseline(source, config_root, dry):
     try:
         head = subprocess.run(
             ["git", "-C", str(repo), "rev-parse", "HEAD"],
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.strip()
+            capture_output=True, text=True, check=True).stdout.strip()
     except (OSError, subprocess.CalledProcessError):
         return True, ""
     engine = Path(config_root) / "hypr" / "scripts" / "ricelin-update.py"
@@ -511,26 +479,15 @@ def _seed_update_baseline(source, config_root, dry):
         return True, ""
     try:
         result = subprocess.run(
-            [
-                sys.executable,
-                str(engine),
-                "baseline",
-                "--sha",
-                head,
-                "--config-root",
-                str(config_root),
-            ],
-            capture_output=True,
-            text=True,
-        )
+            [sys.executable, str(engine), "baseline", "--sha", head,
+             "--config-root", str(config_root)],
+            capture_output=True, text=True)
     except OSError as exc:
         return False, str(exc)
     if result.returncode != 0:
-        return (
-            False,
-            (result.stderr or result.stdout or "").strip() or "baseline failed",
-        )
+        return False, (result.stderr or result.stdout or "").strip() or "baseline failed"
     return True, ""
+
 
 def _report(plan, failures, notes, info, choices, args, do_pkgs, dry):
     """The closing report: a package tally, the next steps, and anything still owed."""
@@ -560,20 +517,17 @@ def _report(plan, failures, notes, info, choices, args, do_pkgs, dry):
     steps.append(("open the launcher", "Super+Space; keybinds live in Settings"))
     steps.append(("pick a wallpaper", "Super+C to swap or grab more"))
     if choices["brave"]:
-        steps.append(
-            (
-                "brave theme",
-                "brave://settings/appearance, load ~/.config/ricelin/brave-theme",
-            )
-        )
+        steps.append(("brave theme",
+                      "brave://settings/appearance, load ~/.config/ricelin/brave-theme"))
 
     attention = []
     for step, _detail, hint in failures:
-        cmd = hint[len("Run: ") :] if hint.startswith("Run: ") else hint
+        cmd = hint[len("Run: "):] if hint.startswith("Run: ") else hint
         attention.append((step, cmd))
 
     title = "Dry run complete" if dry else "Ricelin is in"
     tui.closing(title, tally, steps, attention, notes or None)
+
 
 def run(args):
     """Walk the whole install flow and return an exit code."""
@@ -598,30 +552,28 @@ def run(args):
         config_label = "Found (backed up before anything is replaced)"
     else:
         config_label = "Fresh machine"
-    tui.detected(
-        [
-            ("OS", info["pretty"], True),
-            ("Session", info["compositor"], True),
-            ("Packages", info["pm"], True),
-            ("AUR helper", helper_label, True),
-            ("Configs", config_label, True),
-        ]
-    )
+    tui.detected([
+        ("OS", info["pretty"], True),
+        ("Session", info["compositor"], True),
+        ("Packages", info["pm"], True),
+        ("AUR helper", helper_label, True),
+        ("Configs", config_label, True),
+    ])
 
+    # An unsupported family (Gentoo, Void, ...) gets a loud gate up front, not a
+    # quiet mid-run info line: nothing installs there, so the rice will miss its
+    # dependencies unless the user provides them. Same gate for a read-only-root
+    # box like SteamOS, where the package manager cannot write the system at all.
     if not args.no_deps and not do_pkgs:
         if info["immutable"]:
             why = "This system has a read-only root, so no packages can be installed."
         else:
-            why = (
-                f"{info['pretty']} is not a supported distro family "
-                "(arch, debian, fedora or suse), so no packages will be installed."
-            )
-        warn = [
-            why,
-            "Only the configs will be deployed. The rice needs Hyprland, "
-            "quickshell and its other dependencies installed by hand, "
-            "at your own risk.",
-        ]
+            why = (f"{info['pretty']} is not a supported distro family "
+                   "(arch, debian, fedora or suse), so no packages will be installed.")
+        warn = [why,
+                "Only the configs will be deployed. The rice needs Hyprland, "
+                "quickshell and its other dependencies installed by hand, "
+                "at your own risk."]
         if args.quickstart:
             tui.info(warn)
         else:
@@ -660,209 +612,156 @@ def run(args):
         if not ok:
             failures.append((step, detail, hint))
 
-    needs_sudo = (
-        do_pkgs
-        or choices["sddm"]
-        or choices.get("grub")
-        or choices["fish"]
-        or choices["brave"]
-    ) and not dry
+    needs_sudo = (do_pkgs or choices["sddm"] or choices.get("grub")
+                  or choices["fish"] or choices["brave"]) and not dry
     keepalive_stop = sudo_keepalive() if needs_sudo else None
     try:
         if do_pkgs:
             family = info["family"]
 
+            # a. refresh the package index first so a stale list never sinks the run.
             refresh_env = pkg.INSTALL_ENV if family == "debian" else None
             ok, detail = _run(pkg.refresh_argv(family), dry, env=refresh_env)
-            record(
-                ok,
-                detail,
-                "Refresh package index",
-                "Update the package list yourself, then re-run.",
-            )
+            record(ok, detail, "Refresh package index",
+                   "Update the package list yourself, then re-run.")
 
-            if (
-                family == "arch"
-                and choices["aur_choice"] != "none"
-                and pkg.aur_helper() is None
-            ):
+            # b. bootstrap an AUR helper on Arch when one is wanted but missing.
+            if family == "arch" and choices["aur_choice"] != "none" and pkg.aur_helper() is None:
                 for step_argv in pkg.ensure_aur_helper_steps():
                     ok, detail = _run(step_argv, dry)
-                    record(
-                        ok,
-                        detail,
-                        "Bootstrap yay",
-                        "Install yay or paru by hand, then re-run.",
-                    )
+                    record(ok, detail, "Bootstrap yay",
+                           "Install yay or paru by hand, then re-run.")
 
+            # c. enable any extra repos the native packages need.
             for repo in plan["repos"]:
                 for argv in pkg.enable_repo_argv(repo, family):
                     ok, detail = _run(pkg.privileged(argv, family), dry)
-                    record(
-                        ok,
-                        detail,
-                        f"Enable repo {repo}",
-                        "Enable the repo by hand, then re-run.",
-                    )
+                    record(ok, detail, f"Enable repo {repo}",
+                           "Enable the repo by hand, then re-run.")
 
+            # d. the native batch, one install, sudo-wrapped. If the whole
+            #    transaction aborts on a single bad name, retry each package
+            #    alone so one failure never loses the family's core set.
             if plan["native"]:
                 batch = pkg.install_argv(plan["native"], family)
                 if family == "fedora":
                     batch = [*batch, "--skip-broken"]
-                ok, detail = _run(
-                    pkg.privileged(batch, family), dry, env=pkg.INSTALL_ENV
-                )
+                ok, detail = _run(pkg.privileged(batch, family), dry, env=pkg.INSTALL_ENV)
                 if ok or dry:
-                    record(
-                        ok,
-                        detail,
-                        "Install packages",
-                        "Re-run; a single failed package will not block the rest.",
-                    )
+                    record(ok, detail, "Install packages",
+                           "Re-run; a single failed package will not block the rest.")
                 else:
                     for name in plan["native"]:
                         argv = pkg.privileged(pkg.install_argv([name], family), family)
                         ok, detail = _run(argv, dry, env=pkg.INSTALL_ENV)
-                        record(
-                            ok,
-                            detail,
-                            f"Install {name}",
-                            "Install this one package by hand, then re-run.",
-                        )
+                        if not ok and name in plan["optional_native"]:
+                            notes.append(f"Optional package {name} did not install, skipped.")
+                            continue
+                        record(ok, detail, f"Install {name}",
+                               "Install this one package by hand, then re-run.")
 
+            # e. the AUR batch, unwrapped, the helper escalates itself. Same
+            #    per-package retry on a batch abort.
             if plan["aur"]:
                 argv = _aur_install_argv(plan["aur"], family, choices["aur_choice"])
                 ok, detail = _run(argv, dry)
                 if ok or dry:
-                    record(
-                        ok,
-                        detail,
-                        "Install AUR packages",
-                        "Build the AUR packages with your helper, then re-run.",
-                    )
+                    record(ok, detail, "Install AUR packages",
+                           "Build the AUR packages with your helper, then re-run.")
                 else:
                     for name in plan["aur"]:
                         one = _aur_install_argv([name], family, choices["aur_choice"])
                         ok, detail = _run(one, dry)
-                        record(
-                            ok,
-                            detail,
-                            f"Install AUR {name}",
-                            "Build this AUR package by hand, then re-run.",
-                        )
+                        record(ok, detail, f"Install AUR {name}",
+                               "Build this AUR package by hand, then re-run.")
 
+            # f. the fallbacks, each handler's steps in order. A failed step ends
+            #    that fallback: later steps build on it, and one attention entry
+            #    per package beats a doubled failure label.
             for fid, handler, pkgdict in plan["fallbacks"]:
                 for step in fallbacks.steps_for(handler, pkgdict, family):
                     if "run" in step:
                         ok, detail = _run(step["run"], dry)
                     else:
                         ok, detail = _shell(step["shell"], dry)
-                    record(
-                        ok,
-                        detail,
-                        f"Fallback {fid} ({handler})",
-                        "Follow the project's own install steps for this one.",
-                    )
+                    if not ok:
+                        record(ok, detail, f"Fallback {fid} ({handler})",
+                               "Follow the project's own install steps for this one.")
+                        break
 
+            # g. wire up uinput on every family, the dotool handler's last steps.
+            #    Skipped only when the dotool fallback already ran them (off Arch),
+            #    so uinput ends up set up everywhere with no double work.
             dotool_fb = any(handler == "dotool" for _, handler, _ in plan["fallbacks"])
             if not dotool_fb:
-                for step in fallbacks.steps_for("dotool", {"id": "dotool"}, family)[3:]:
+                for step in fallbacks.steps_for("dotool", {"id": "dotool"}, family)[4:]:
                     if "run" in step:
                         ok, detail = _run(step["run"], dry)
                     else:
                         ok, detail = _shell(step["shell"], dry)
-                    record(
-                        ok,
-                        detail,
-                        "Set up uinput",
-                        "Add yourself to the input group and reload udev by hand.",
-                    )
+                    record(ok, detail, "Set up uinput",
+                           "Add yourself to the input group and reload udev by hand.")
 
+            # h. services: enable on systemd, print the manual commands otherwise.
             if info["init"] == "systemd":
                 if _active("systemd-networkd") or _active("iwd"):
-                    notes.append(
-                        "Another network manager is active, left NetworkManager "
-                        "alone. The Link surface wants NetworkManager."
-                    )
+                    notes.append("Another network manager is active, left NetworkManager "
+                                 "alone. The Link surface wants NetworkManager.")
                 else:
                     ok, detail = _run(
-                        [
-                            "sudo",
-                            "systemctl",
-                            "enable",
-                            "--now",
-                            "NetworkManager.service",
-                        ],
-                        dry,
-                    )
-                    record(
-                        ok,
-                        detail,
-                        "Enable NetworkManager",
-                        "Enable NetworkManager.service yourself.",
-                    )
+                        ["sudo", "systemctl", "enable", "--now", "NetworkManager.service"], dry)
+                    record(ok, detail, "Enable NetworkManager",
+                           "Enable NetworkManager.service yourself.")
                 ok, detail = _run(
-                    ["sudo", "systemctl", "enable", "--now", "bluetooth.service"], dry
-                )
-                record(
-                    ok, detail, "Enable bluetooth", "Enable bluetooth.service yourself."
-                )
-                ok, detail = _run(
-                    ["systemctl", "--user", "enable", "--now", "hyprsunset.service"],
-                    dry,
-                )
-                record(
-                    ok,
-                    detail,
-                    "Enable night light",
-                    "Run: systemctl --user enable --now hyprsunset.service",
-                )
+                    ["sudo", "systemctl", "enable", "--now", "bluetooth.service"], dry)
+                record(ok, detail, "Enable bluetooth", "Enable bluetooth.service yourself.")
+                if shutil.which("hyprsunset"):
+                    ok, detail = _run(
+                        ["systemctl", "--user", "enable", "--now", "hyprsunset.service"], dry)
+                    record(ok, detail, "Enable night light",
+                           "Run: systemctl --user enable --now hyprsunset.service")
+                else:
+                    notes.append("hyprsunset is not installed, night light left off. "
+                                 "Install it and run: systemctl --user enable --now hyprsunset.service")
             else:
                 notes.extend(_service_note(info["init"]))
 
+        # i. bridge the wallpaper binary onto swww when the rice's awww name is
+        #    missing, so the background sets on every family, not just CachyOS.
         ok, detail, bridged = bridge_wallpaper_binary(dry)
-        record(
-            ok,
-            detail,
-            "Bridge wallpaper binary",
-            "Symlink ~/.local/bin/awww to $(command -v swww) yourself.",
-        )
+        record(ok, detail, "Bridge wallpaper binary",
+               "Symlink ~/.local/bin/awww to $(command -v swww) yourself.")
         if bridged:
-            notes.append(
-                "Linked awww to swww in ~/.local/bin. Make sure "
-                "~/.local/bin is on PATH so the wallpaper script finds it."
-            )
+            notes.append("Linked awww to swww in ~/.local/bin. Make sure "
+                         "~/.local/bin is on PATH so the wallpaper script finds it.")
 
+        # j. fish as the login shell, kept even with --no-deps. Never chsh onto a
+        #    binary that is not there: root's chsh skips the shell validation, so
+        #    a missing fish would land in /etc/passwd and break every login.
         if choices["fish"]:
             fishbin = shutil.which("fish")
             if fishbin:
-                ok, detail = _run(
-                    ["sudo", "chsh", "-s", fishbin, getpass.getuser()], dry
-                )
-                record(
-                    ok,
-                    detail,
-                    "Set fish as login shell",
-                    "Run: chsh -s $(command -v fish)",
-                )
+                # chsh prompts for the login password through PAM, which a piped
+                # `curl | bash` run has no terminal for, so it always failed. Set
+                # it as root instead; the sudo timestamp is already warm.
+                ok, detail = _run(["sudo", "chsh", "-s", fishbin, getpass.getuser()], dry)
+                record(ok, detail, "Set fish as login shell",
+                       "Run: chsh -s $(command -v fish)")
             elif dry:
                 print("  would set fish as login shell (once fish is installed)")
             else:
-                record(
-                    False,
-                    "fish is not installed, login shell left unchanged",
-                    "Set fish as login shell",
-                    "Install fish, then run: chsh -s $(command -v fish)",
-                )
+                record(False, "fish is not installed, login shell left unchanged",
+                       "Set fish as login shell",
+                       "Install fish, then run: chsh -s $(command -v fish)")
 
+        # k. deploy the configs and make them portable. A copytree or write
+        #    that hits an OSError mid-iteration is recorded and stepped past,
+        #    so a real run still finishes with a report instead of a traceback.
         try:
-            for action in deploy.deploy(
-                src=args.source, config_root=deploy.CONFIG_ROOT, apply=not dry
-            ):
+            for action in deploy.deploy(src=args.source, config_root=deploy.CONFIG_ROOT,
+                                        apply=not dry):
                 if action["action"] == "skip":
-                    print(
-                        f"  deploy skip: {action['item']} ({action.get('reason', '')})"
-                    )
+                    print(f"  deploy skip: {action['item']} ({action.get('reason', '')})")
                     continue
                 head = "would deploy" if dry else "deployed"
                 extra = f" (backup {action['backup']})" if action.get("backup") else ""
@@ -870,59 +769,38 @@ def run(args):
                     extra += f" (kept {len(action['preserved'])} user files)"
                 print(f"  {head}: {action['item']} -> {action['dest']}{extra}")
         except OSError as exc:
-            record(
-                False,
-                str(exc),
-                "Deploy configs",
-                "Check ~/.config permissions and re-run the installer.",
-            )
+            record(False, str(exc), "Deploy configs",
+                   "Check ~/.config permissions and re-run the installer.")
         try:
-            for action in deploy.neutralize(
-                config_root=deploy.CONFIG_ROOT, apply=not dry, src=args.source
-            ):
+            for action in deploy.neutralize(config_root=deploy.CONFIG_ROOT, apply=not dry,
+                                            src=args.source):
                 head = "would neutralize" if dry else "neutralized"
                 print(f"  {head}: {action['step']}")
         except OSError as exc:
-            record(
-                False,
-                str(exc),
-                "Neutralize configs",
-                "Check ~/.config permissions and re-run the installer.",
-            )
+            record(False, str(exc), "Neutralize configs",
+                   "Check ~/.config permissions and re-run the installer.")
 
+        # k2. put the ricelin control CLI on PATH now that the script is deployed.
         ok, detail, linked = link_ricelin_cli(dry)
-        record(
-            ok,
-            detail,
-            "Link ricelin CLI",
-            "Symlink ~/.local/bin/ricelin to ~/.config/hypr/scripts/ricelin yourself.",
-        )
+        record(ok, detail, "Link ricelin CLI",
+               "Symlink ~/.local/bin/ricelin to ~/.config/hypr/scripts/ricelin yourself.")
         if linked:
-            notes.append(
-                "Linked the ricelin CLI into ~/.local/bin. With it on PATH "
-                "you can run: ricelin status, ricelin restart, ricelin update."
-            )
+            notes.append("Linked the ricelin CLI into ~/.local/bin. With it on PATH "
+                         "you can run: ricelin status, ricelin restart, ricelin update.")
 
+        # l. seed a starter wallpaper so the first boot has a background, a
+        #    populated picker and a palette to render.
         ok, detail = seed_wallpapers(dry)
-        record(
-            ok,
-            detail,
-            "Seed wallpapers",
-            "Copy any image into ~/Ricelin/wallpapers yourself.",
-        )
+        record(ok, detail, "Seed wallpapers",
+               "Copy any image into ~/Ricelin/wallpapers yourself.")
 
+        # m. themes.
         if choices["sddm"]:
-            sddm_installer = os.path.join(
-                args.source, "sddm", "themes", "torii", "install.sh"
-            )
+            sddm_installer = os.path.join(args.source, "sddm", "themes", "torii", "install.sh")
             if os.path.isfile(sddm_installer):
                 ok, detail = _run(["sh", sddm_installer], dry)
-                record(
-                    ok,
-                    detail,
-                    "Install SDDM theme",
-                    "Run the SDDM theme installer by hand.",
-                )
+                record(ok, detail, "Install SDDM theme",
+                       "Run the SDDM theme installer by hand.")
             else:
                 notes.append(f"SDDM installer not found at {sddm_installer}, skipped.")
         if choices["grub"] and info["bootloader"] == "grub":
@@ -931,86 +809,60 @@ def run(args):
                     printable = " ".join(shlex.quote(a) for a in action["cmd"])
                     print(f"  would run: {printable}")
                 else:
-                    record(
-                        action["ok"],
-                        action["detail"],
-                        "Install GRUB theme",
-                        "Run the GRUB theme steps by hand.",
-                    )
+                    record(action["ok"], action["detail"], "Install GRUB theme",
+                           "Run the GRUB theme steps by hand.")
 
+        # n. optional Brave: install it through the same resolve/fallback path the
+        #    core packages use (arch -> AUR brave-bin, off arch -> Flathub), then
+        #    drop the theme files in place. The theme is never auto-applied, since
+        #    Chromium signs its prefs; the user loads it from brave://settings.
         if choices["brave"]:
             if do_pkgs:
                 family = info["family"]
                 brave_pkg = next(
-                    (p for p in manifest["packages"] if p["id"] == "brave"), None
-                )
+                    (p for p in manifest["packages"] if p["id"] == "brave"), None)
                 if brave_pkg is None:
                     action, target = "skip", None
                 else:
-                    action, target = distro.resolve(
-                        brave_pkg, family, choices["aur_choice"]
-                    )
+                    action, target = distro.resolve(brave_pkg, family, choices["aur_choice"])
                 if action == "skip":
-                    notes.append(
-                        "No Brave package for this distro, skipped the install."
-                    )
+                    notes.append("No Brave package for this distro, skipped the install.")
                 elif action == "fallback":
                     for step in fallbacks.steps_for(target, brave_pkg, family):
                         if "run" in step:
                             ok, detail = _run(step["run"], dry)
                         else:
                             ok, detail = _shell(step["shell"], dry)
-                        record(
-                            ok,
-                            detail,
-                            "Install Brave",
-                            "Install Brave by hand, then load its theme.",
-                        )
+                        record(ok, detail, "Install Brave",
+                               "Install Brave by hand, then load its theme.")
                 elif pkg.is_installed(target, family):
                     notes.append("Brave is already installed.")
                 elif distro.is_aur(brave_pkg, family):
                     ok, detail = _run(
-                        _aur_install_argv([target], family, choices["aur_choice"]), dry
-                    )
-                    record(
-                        ok,
-                        detail,
-                        "Install Brave",
-                        "Install Brave by hand, then load its theme.",
-                    )
+                        _aur_install_argv([target], family, choices["aur_choice"]), dry)
+                    record(ok, detail, "Install Brave",
+                           "Install Brave by hand, then load its theme.")
                 else:
                     argv = pkg.privileged(pkg.install_argv([target], family), family)
                     ok, detail = _run(argv, dry, env=pkg.INSTALL_ENV)
-                    record(
-                        ok,
-                        detail,
-                        "Install Brave",
-                        "Install Brave by hand, then load its theme.",
-                    )
+                    record(ok, detail, "Install Brave",
+                           "Install Brave by hand, then load its theme.")
             else:
                 notes.append("Skipped the Brave install, only deployed its theme.")
             ok, detail = deploy_brave_theme(args.source, dry)
-            record(
-                ok,
-                detail,
-                "Deploy Brave theme",
-                "Copy configs/brave-theme to ~/.config/ricelin/brave-theme yourself.",
-            )
+            record(ok, detail, "Deploy Brave theme",
+                   "Copy configs/brave-theme to ~/.config/ricelin/brave-theme yourself.")
     finally:
         if keepalive_stop:
             keepalive_stop()
 
     ok, detail = _seed_update_baseline(args.source, deploy.CONFIG_ROOT, dry)
     if not ok:
-        failures.append(
-            (
-                "Seed update baseline",
-                detail,
-                "Open Settings > Updates once; the first apply sets it up.",
-            )
-        )
+        failures.append(("Seed update baseline", detail,
+                         "Open Settings > Updates once; the first apply sets it up."))
     _report(plan, failures, notes, info, choices, args, do_pkgs, dry)
     return 0
+
 
 def run_uninstall(args):
     """
@@ -1045,12 +897,8 @@ def run_uninstall(args):
             tui.outro("Cancelled")
             return 0
     except RuntimeError:
-        tui.info(
-            [
-                "No controlling terminal; run the uninstall from a real "
-                "terminal so it can confirm first."
-            ]
-        )
+        tui.info(["No controlling terminal; run the uninstall from a real "
+                  "terminal so it can confirm first."])
         return 1
 
     for a in deploy.uninstall(config_root=deploy.CONFIG_ROOT, apply=True):
@@ -1065,56 +913,33 @@ def run_uninstall(args):
             print(f"  removed: {link}")
         except OSError:
             pass
-    tui.info(
-        [
-            "The repo clone in ~/.local/share/ricelin and your wallpapers in "
-            "~/Ricelin are left for you to delete."
-        ]
-    )
+    tui.info(["The repo clone in ~/.local/share/ricelin and your wallpapers in "
+              "~/Ricelin are left for you to delete."])
     tui.outro("Ricelin removed")
     return 0
 
+
 def main():
     parser = argparse.ArgumentParser(
-        description="Install the Ricelin Hyprland rice across distro families."
-    )
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Walk the whole flow and change nothing"
-    )
-    parser.add_argument(
-        "--quickstart",
-        action="store_true",
-        help="Skip the wizard, take the Quick-profile defaults",
-    )
-    parser.add_argument(
-        "--source",
-        default=str(deploy.CONFIGS),
-        help="The repo configs directory to deploy from",
-    )
-    parser.add_argument(
-        "--full", action="store_true", help="Preselect the Full profile"
-    )
-    parser.add_argument(
-        "--sddm", action="store_true", help="Preselect the torii SDDM login theme"
-    )
-    parser.add_argument(
-        "--brave", action="store_true", help="Preselect Brave plus its Ricelin theme"
-    )
-    parser.add_argument(
-        "--no-deps",
-        action="store_true",
-        help="Skip the package step, only deploy the configs",
-    )
-    parser.add_argument(
-        "--reinstall",
-        action="store_true",
-        help="Run the full install over an existing Ricelin install",
-    )
-    parser.add_argument(
-        "--uninstall",
-        action="store_true",
-        help="Remove the deployed configs and restore the backups",
-    )
+        description="Install the Ricelin Hyprland rice across distro families.")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Walk the whole flow and change nothing")
+    parser.add_argument("--quickstart", action="store_true",
+                        help="Skip the wizard, take the Quick-profile defaults")
+    parser.add_argument("--source", default=str(deploy.CONFIGS),
+                        help="The repo configs directory to deploy from")
+    parser.add_argument("--full", action="store_true",
+                        help="Preselect the Full profile")
+    parser.add_argument("--sddm", action="store_true",
+                        help="Preselect the torii SDDM login theme")
+    parser.add_argument("--brave", action="store_true",
+                        help="Preselect Brave plus its Ricelin theme")
+    parser.add_argument("--no-deps", action="store_true",
+                        help="Skip the package step, only deploy the configs")
+    parser.add_argument("--reinstall", action="store_true",
+                        help="Run the full install over an existing Ricelin install")
+    parser.add_argument("--uninstall", action="store_true",
+                        help="Remove the deployed configs and restore the backups")
     args = parser.parse_args()
     try:
         if args.uninstall:
@@ -1124,6 +949,6 @@ def main():
         tui.outro("Cancelled")
         return 130
 
+
 if __name__ == "__main__":
     raise SystemExit(main())
-
