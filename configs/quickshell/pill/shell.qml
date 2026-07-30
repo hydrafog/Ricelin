@@ -275,6 +275,9 @@ ShellRoot {
                 return false;
             }
 
+            readonly property bool showOsdInFullscreen: pill.osdActive && (pill.osdKind === "volume" || pill.osdKind === "brightness")
+            readonly property bool monFullscreenHidden: monFullscreen && !showOsdInFullscreen
+
             onMonFullscreenChanged: if (monFullscreen) {
                 if (root.openMon === modelData.name) root.close();
                 if (root.peekMon === modelData.name) root.peekMon = "";
@@ -290,15 +293,15 @@ ShellRoot {
 
             anchors { top: true; left: true; right: true; bottom: true }
 
-            mask: monFullscreen ? hiddenRegion : (modal ? fullRegion : pillRegion)
+            mask: monFullscreenHidden ? hiddenRegion : (modal ? fullRegion : pillRegion)
             Region { id: hiddenRegion }
             Region {
                 id: pillRegion
                 readonly property real baseW: Math.max(pill.width, pill.targetW)
                 x: pill.x + (pill.width - baseW) / 2
-                y: pill.y
+                y: 0
                 width: baseW + pill.inputPadRight
-                height: Math.max(pill.height, pill.targetH)
+                height: Math.max(pill.height, pill.targetH) + overlay.topGap
             }
             Region {
                 id: fullRegion
@@ -426,7 +429,7 @@ ShellRoot {
                     surface: overlay.surface
                     forcePinned: root.peekMon === overlay.modelData.name
 
-                    opacity: overlay.monFullscreen ? 0 : 1
+                    opacity: overlay.monFullscreenHidden ? 0 : 1
                     Behavior on opacity {
                         NumberAnimation {
                             duration: Motion.morph
@@ -435,7 +438,7 @@ ShellRoot {
                         }
                     }
                     transform: Translate {
-                        y: overlay.monFullscreen ? -(pill.height + overlay.topGap) : 0
+                        y: overlay.monFullscreenHidden ? -(pill.height + overlay.topGap) : 0
                         Behavior on y {
                             NumberAnimation {
                                 duration: Motion.morph

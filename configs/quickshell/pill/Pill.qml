@@ -114,6 +114,7 @@ Item {
     }
     readonly property bool toastActive: Notifs.popups.length > 0
     readonly property bool osdActive: osd.flashing
+    readonly property string osdKind: osd.kind
 
     /**
      * Quick-record overlays belong only to the focused monitor the keybind
@@ -1196,7 +1197,7 @@ Item {
             spacing: 9 * pill.s
             Item {
                 id: restKanji
-                visible: pill.specialView === ""
+                visible: pill.specialView === "" && (Flags.showGlyphs || restKanji.barsOn)
                 anchors.verticalCenter: parent.verticalCenter
                 width: kanjiFill.implicitWidth
                 height: kanjiFill.implicitHeight
@@ -1224,17 +1225,6 @@ Item {
                     font.family: Theme.fontJp
                     font.weight: Font.Medium
                     font.pixelSize: 15 * pill.s
-                    Behavior on opacity { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
-                }
-
-                GlyphIcon {
-                    anchors.centerIn: parent
-                    opacity: (!Flags.showGlyphs && !restKanji.barsOn) ? 1 : 0
-                    width: 17 * pill.s
-                    height: 17 * pill.s
-                    name: "clock"
-                    color: Theme.cream
-                    stroke: 1.7
                     Behavior on opacity { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
                 }
 
