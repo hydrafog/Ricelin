@@ -41,6 +41,58 @@ Singleton {
         : (full ? "On AC · Full"
         : (discharging ? "Discharging" : "On AC"))
 
+    readonly property bool critical: discharging && pct <= 5
+
+    property bool notifiedLow: false
+    property bool notifiedFull: false
+    property bool suspendedCritical: false
+
+    function checkBatteryNotifications() {
+        if (!present) return;
+
+        if (discharging) {
+            notifiedFull = false;
+
+            if (critical) {
+                if (!suspendedCritical) {
+                    suspendedCritical = true;
+                    Quickshell.execDetached(["notify-send", "-u", "critical", "-a", "Battery", "-i", "battery-caution", "Critical Battery", "Battery level is critically low (" + pct + "%). Suspending system..."]);
+                    Quickshell.execDetached(["systemctl", "suspend"]);
+                }
+            } else {
+                suspendedCritical = false;
+            }
+
+            if (pct <= 20) {
+                if (!notifiedLow) {
+                    notifiedLow = true;
+                    var msg = "Battery level is low (" + pct + "%).";
+                    if (timeStr.length > 0)
+                        msg += " " + timeStr + " remaining.";
+                    Quickshell.execDetached(["notify-send", "-u", "critical", "-a", "Battery", "-i", "battery-caution", "Low Battery", msg]);
+                }
+            } else {
+                notifiedLow = false;
+            }
+        } else if (charging || full) {
+            notifiedLow = false;
+            suspendedCritical = false;
+
+            if (full || pct >= 100) {
+                if (!notifiedFull) {
+                    notifiedFull = true;
+                    Quickshell.execDetached(["notify-send", "-u", "normal", "-a", "Battery", "-i", "battery-full", "Battery Fully Charged", "Battery level is 100%."]);
+                }
+            } else {
+                notifiedFull = false;
+            }
+        }
+    }
+
+    onPctChanged: checkBatteryNotifications()
+    onStateChanged: checkBatteryNotifications()
+    onPresentChanged: checkBatteryNotifications()
+
     function fmt(sec) {
         var s = Math.max(0, Math.round(sec));
         var h = Math.floor(s / 3600);

@@ -276,7 +276,7 @@ ShellRoot {
                 return false;
             }
 
-            readonly property bool showOsdInFullscreen: pill.osdActive && (pill.osdKind === "volume" || pill.osdKind === "brightness")
+            readonly property bool showOsdInFullscreen: (pill.osdActive && (pill.osdKind === "volume" || pill.osdKind === "brightness")) || pill.toastActive
             readonly property bool monFullscreenHidden: monFullscreen && !showOsdInFullscreen
 
             onMonFullscreenChanged: if (monFullscreen) {
