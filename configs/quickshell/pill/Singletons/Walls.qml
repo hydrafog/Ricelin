@@ -181,6 +181,4 @@ Singleton {
             stateProc.running = true;
         }
     }
-
-    Component.onCompleted: refresh()
 }

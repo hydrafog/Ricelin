@@ -82,8 +82,6 @@ Singleton {
         return "UP " + d + "D " + hh + ":" + mm;
     }
 
-    Component.onCompleted: detectProc.running = true
-
     Process {
         id: detectProc
         command: ["sh", "-c",

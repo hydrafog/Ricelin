@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Effects
-import QtMultimedia
 import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
@@ -734,22 +733,8 @@ PillSurface {
                     anchors.fill: parent
                     active: tile.showPreview && tile.videoSource !== ""
 
-                    sourceComponent: Item {
-                        VideoOutput {
-                            id: videoPreview
-                            anchors.fill: parent
-                            fillMode: VideoOutput.PreserveAspectCrop
-                            visible: vidPlayer.playbackState === MediaPlayer.PlayingState
-                        }
-
-                        MediaPlayer {
-                            id: vidPlayer
-                            videoOutput: videoPreview
-                            loops: MediaPlayer.Infinite
-                            source: tile.videoSource
-                            onMediaStatusChanged: if (mediaStatus === MediaPlayer.LoadedMedia) play()
-                        }
-                    }
+                    source: "VideoPreview.qml"
+                    onLoaded: item.source = tile.videoSource
                 }
 
                 Rectangle {

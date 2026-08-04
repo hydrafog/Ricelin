@@ -167,6 +167,4 @@ Singleton {
             }
         }
     }
-
-    Component.onCompleted: refresh()
 }
