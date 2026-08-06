@@ -21,9 +21,9 @@ import "Singletons"
  * Typing any printable character while the strip is open drops it into a
  * DuckDuckGo image search: a search field reveals at the top, the strip swaps
  * its model from local files to remote results (debounced fetch through
- * wallpaper-search.sh), and selecting a result downloads it, applies it and
- * returns to the local strip. Escape, an emptied query or a finished pick all
- * fall back to the local view.
+ * wallpaper-search.sh), and selecting a result downloads it and applies it
+ * while keeping the results on screen so you can keep browsing picks. Escape
+ * or an emptied query falls back to the local view.
  */
 PillSurface {
     id: root
@@ -228,8 +228,8 @@ PillSurface {
 
     /**
      * Leave search mode and fall back to the local strip, re-centring on the
-     * wallpaper currently on screen. Used by Escape, an emptied query and a
-     * completed download.
+     * wallpaper currently on screen. Used by Escape and an emptied query; a
+     * completed download stays in search so the results remain on screen.
      */
     function exitSearch() {
         searching = false;
@@ -415,7 +415,6 @@ PillSurface {
                 failed = "";
                 Walls.refresh();
                 Walls.apply(savedPath);
-                root.exitSearch();
             } else {
                 failed = target;
             }
