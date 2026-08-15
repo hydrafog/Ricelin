@@ -30,7 +30,7 @@ SettingsSurface {
      */
     property point lastPointer: Qt.point(-1, -1)
 
-    readonly property string resetLabel: "System default (Inter)"
+    readonly property string resetLabel: "System default (Recursive)"
 
     /**
      * The only Noto families kept in the list. Noto ships hundreds of per-script

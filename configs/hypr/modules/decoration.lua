@@ -4,11 +4,11 @@ if not ok then wc = nil end
 
 local function border(hex, fallback)
     if type(hex) ~= "string" then hex = fallback end
-    return "rgb(" .. hex:gsub("#", "") .. ")"
+    return "rgba(" .. hex:gsub("#", "") .. "33)"
 end
 
-local active   = border(wc and wc.active, "919191")
-local inactive = active
+local active   = border(wc and wc.c2 or wc and wc.inactive or wc and wc.active, "ffffff18")
+local inactive = "rgba(00000000)"
 
 hl.config({
     misc = {
