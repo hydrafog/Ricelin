@@ -81,20 +81,20 @@ SettingsSurface {
     readonly property string decoPath: Quickshell.env("HOME") + "/.config/hypr/modules/decoration.lua"
     readonly property string pillBlurRule: 'hl.layer_rule({ name = "pill-blur", match = { namespace = "pill" }, blur = true, ignore_alpha = 0.5 })\n'
 
-    property int gapsIn: 6
-    property int gapsOut: 12
-    property int rounding: 12
-    property int roundingPower: 4
-    property int borderSize: 2
+    property int gapsIn: 8
+    property int gapsOut: 16
+    property int rounding: 20
+    property int roundingPower: 2
+    property int borderSize: 1
     property bool resizeOnBorder: true
     property string layout: "dwindle"
-    property bool blurOn: true
-    property int blurSize: 8
-    property int blurPasses: 3
-    property real blurVibrancy: 0.17
+    property bool blurOn: false
+    property int blurSize: 5
+    property int blurPasses: 2
+    property real blurVibrancy: 0.25
     property real blurNoise: 0.01
     property bool shadowOn: true
-    property int shadowRange: 12
+    property int shadowRange: 24
     property int shadowRenderPower: 3
     property real activeOpacity: 1.0
     property real inactiveOpacity: 1.0
@@ -130,32 +130,32 @@ SettingsSurface {
         var t = root.decoText;
 
         var gi = parseInt(SetDeco.getField(t, "gaps_in"), 10);
-        root.gapsIn = isNaN(gi) ? 6 : gi;
+        root.gapsIn = isNaN(gi) ? 8 : gi;
         var go = parseInt(SetDeco.getField(t, "gaps_out"), 10);
-        root.gapsOut = isNaN(go) ? 12 : go;
+        root.gapsOut = isNaN(go) ? 16 : go;
         var rd = parseInt(SetDeco.getField(t, "rounding"), 10);
-        root.rounding = isNaN(rd) ? 12 : rd;
+        root.rounding = isNaN(rd) ? 20 : rd;
         var rp = parseInt(SetDeco.getField(t, "rounding_power"), 10);
-        root.roundingPower = isNaN(rp) ? 4 : rp;
+        root.roundingPower = isNaN(rp) ? 2 : rp;
         var bs = parseInt(SetDeco.getField(t, "border_size"), 10);
-        root.borderSize = isNaN(bs) ? 2 : bs;
+        root.borderSize = isNaN(bs) ? 1 : bs;
         root.resizeOnBorder = SetDeco.getField(t, "resize_on_border") === "true";
         var lo = SetDeco.getField(t, "layout");
         root.layout = lo.length > 0 ? lo : "dwindle";
 
         root.blurOn = SetDeco.getBlockField(t, "blur", "enabled") === "true";
         var bz = parseInt(SetDeco.getBlockField(t, "blur", "size"), 10);
-        root.blurSize = isNaN(bz) ? 8 : bz;
+        root.blurSize = isNaN(bz) ? 5 : bz;
         var bp = parseInt(SetDeco.getBlockField(t, "blur", "passes"), 10);
-        root.blurPasses = isNaN(bp) ? 3 : bp;
+        root.blurPasses = isNaN(bp) ? 2 : bp;
         var vb = parseFloat(SetDeco.getBlockField(t, "blur", "vibrancy"));
-        root.blurVibrancy = isNaN(vb) ? 0.17 : vb;
+        root.blurVibrancy = isNaN(vb) ? 0.25 : vb;
         var nz = parseFloat(SetDeco.getBlockField(t, "blur", "noise"));
         root.blurNoise = isNaN(nz) ? 0.01 : nz;
 
         root.shadowOn = SetDeco.getBlockField(t, "shadow", "enabled") === "true";
         var sr = parseInt(SetDeco.getBlockField(t, "shadow", "range"), 10);
-        root.shadowRange = isNaN(sr) ? 12 : sr;
+        root.shadowRange = isNaN(sr) ? 24 : sr;
         var sp = parseInt(SetDeco.getBlockField(t, "shadow", "render_power"), 10);
         root.shadowRenderPower = isNaN(sp) ? 3 : sp;
 

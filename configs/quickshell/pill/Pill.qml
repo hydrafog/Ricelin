@@ -704,9 +704,9 @@ Item {
             GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Flags.pillOpacity) }
         }
 
-        layer.enabled: !pill.morphing
+        layer.enabled: true
         layer.effect: MultiEffect {
-            shadowEnabled: false
+            shadowEnabled: true
             shadowColor: Qt.rgba(0, 0, 0, Theme.shadowOpacity)
             shadowBlur: 0.7
             shadowVerticalOffset: 3 * pill.s
