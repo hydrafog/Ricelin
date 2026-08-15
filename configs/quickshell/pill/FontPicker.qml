@@ -30,7 +30,7 @@ SettingsSurface {
      */
     property point lastPointer: Qt.point(-1, -1)
 
-    readonly property string resetLabel: "System default (Recursive)"
+    readonly property string resetLabel: "System default (SF Pro Display)"
 
     /**
      * The only Noto families kept in the list. Noto ships hundreds of per-script

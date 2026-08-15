@@ -417,7 +417,7 @@ SettingsSurface {
             surface: root
             name: "Font"
             icon: "type"
-            sub: Flags.uiFont.length > 0 ? Flags.uiFont : "Recursive"
+            sub: Flags.uiFont.length > 0 ? Flags.uiFont : "SF Pro Display"
             last: true
 
             GlyphIcon {

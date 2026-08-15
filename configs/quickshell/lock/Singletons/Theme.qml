@@ -23,7 +23,7 @@ Singleton {
     property color dim:    dyn ? Dyn.dim : "#8a7d74"
     Behavior on dim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    readonly property string font:  "Recursive"
+    readonly property string font:  "SF Pro Display"
 
     readonly property color fieldBg: dyn ? Qt.alpha(bright, 0.10) : Qt.rgba(1, 0.96, 0.94, 0.10)
     readonly property color fieldBorder: dyn ? Qt.alpha(cream, 0.30) : Qt.rgba(230 / 255, 214 / 255, 203 / 255, 0.30)
