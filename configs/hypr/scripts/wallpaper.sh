@@ -222,13 +222,13 @@ palette_update() {
       if ok and wc then
         local c1 = wc.c1 or wc.active
         local c2 = wc.c2 or wc.inactive
-        if c1 then c1 = "rgb(" .. c1:gsub("#", "") .. ")" end
-        if c2 then c2 = "rgb(" .. c2:gsub("#", "") .. ")" end
+        if c1 then c1 = "rgba(" .. c1:gsub("#", "") .. "66)" end
+        if c2 then c2 = "rgba(" .. c2:gsub("#", "") .. "33)" end
         hl.config({
           general = {
             col = {
-              active_border = { colors = { c1, c2 }, angle = 45 },
-              inactive_border = { colors = { c1, c2 }, angle = 45 }
+              active_border = { colors = { c1 } },
+              inactive_border = { colors = { c2 } }
             }
           }
         })

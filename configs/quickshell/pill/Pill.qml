@@ -682,6 +682,22 @@ Item {
     }
 
     Rectangle {
+        id: outerBorder
+        anchors.fill: body
+        anchors.margins: -3 * pill.s
+        radius: body.radius + 3 * pill.s
+        topLeftRadius: body.topLeftRadius > 0 ? (body.topLeftRadius + 3 * pill.s) : 0
+        topRightRadius: body.topRightRadius > 0 ? (body.topRightRadius + 3 * pill.s) : 0
+        bottomLeftRadius: body.bottomLeftRadius > 0 ? (body.bottomLeftRadius + 3 * pill.s) : 0
+        bottomRightRadius: body.bottomRightRadius > 0 ? (body.bottomRightRadius + 3 * pill.s) : 0
+        color: "transparent"
+        border.width: 3 * pill.s
+        border.color: Qt.rgba(0, 0, 0, 0.125)
+        visible: pill.mode !== "game"
+        z: -1
+    }
+
+    Rectangle {
         id: body
         anchors.fill: parent
 
@@ -697,30 +713,45 @@ Item {
         topRightRadius: pill.morphRadius * (1 - gameFlat)
         bottomLeftRadius: pill.morphRadius * (1 - gameFlat)
         bottomRightRadius: pill.morphRadius * (1 - gameFlat)
-        border.width: 1
-        border.color: Theme.border
+
         gradient: Gradient {
-            GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Flags.pillOpacity) }
-            GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Flags.pillOpacity) }
+            orientation: Gradient.Horizontal
+            GradientStop { position: 0.0; color: Theme.dyn ? Dyn.primary : Theme.vermLit }
+            GradientStop { position: 1.0; color: Theme.dyn ? Dyn.outlineVariant : Theme.border }
+        }
+
+        Rectangle {
+            id: bodyInner
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: Math.max(0, body.radius - 1)
+            topLeftRadius: Math.max(0, body.topLeftRadius - 1)
+            topRightRadius: Math.max(0, body.topRightRadius - 1)
+            bottomLeftRadius: Math.max(0, body.bottomLeftRadius - 1)
+            bottomRightRadius: Math.max(0, body.bottomRightRadius - 1)
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Flags.pillOpacity) }
+                GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Flags.pillOpacity) }
+            }
+
+            Rectangle {
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.topMargin: 1
+                anchors.leftMargin: bodyInner.radius * 0.6
+                anchors.rightMargin: bodyInner.radius * 0.6
+                height: 1
+                color: Theme.sheen
+            }
         }
 
         layer.enabled: true
         layer.effect: MultiEffect {
             shadowEnabled: true
             shadowColor: Qt.rgba(0, 0, 0, Theme.shadowOpacity)
-            shadowBlur: 0.7
-            shadowVerticalOffset: 3 * pill.s
-        }
-
-        Rectangle {
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.topMargin: 1
-            anchors.leftMargin: body.radius * 0.6
-            anchors.rightMargin: body.radius * 0.6
-            height: 1
-            color: Theme.sheen
+            shadowBlur: 0.8
+            shadowVerticalOffset: 6 * pill.s
         }
     }
 
