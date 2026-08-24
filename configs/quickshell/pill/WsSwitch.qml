@@ -34,6 +34,7 @@ Item {
         return "";
     }
 
+    implicitWidth: row.implicitWidth
     implicitHeight: 14 * s
 
     Row {
