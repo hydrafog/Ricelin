@@ -43,10 +43,10 @@ Singleton {
     property color dim:      dyn ? Dyn.dim : "#8a7d74"
     Behavior on dim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color cardTop:  dyn ? Qt.alpha(Dyn.surfaceContainerHigh, 0.40) : Qt.rgba(1, 1, 1, 0.08)
+    property color cardTop:  dyn ? Qt.alpha(bright, 0.08) : Qt.rgba(1, 1, 1, 0.08)
     Behavior on cardTop { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color cardBot:  dyn ? Qt.alpha(Dyn.surfaceContainerLow, 0.50) : Qt.rgba(1, 1, 1, 0.08)
+    property color cardBot:  dyn ? Qt.alpha(bright, 0.08) : Qt.rgba(1, 1, 1, 0.08)
     Behavior on cardBot { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color activeBorder: dyn ? Qt.alpha(Dyn.primary, 0.40) : Qt.alpha(vermLit, 0.40)

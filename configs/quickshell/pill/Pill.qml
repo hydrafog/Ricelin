@@ -637,8 +637,8 @@ Item {
         border.width: 1
         border.color: Theme.border
         gradient: Gradient {
-            GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Flags.pillOpacity) }
-            GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Flags.pillOpacity) }
+            GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Theme.cardTop.a * Flags.pillOpacity) }
+            GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Theme.cardBot.a * Flags.pillOpacity) }
         }
         Behavior on budR { NumberAnimation { duration: Motion.fast; easing.type: Motion.easeStandard } }
         Behavior on opacity { NumberAnimation { duration: Motion.standard } }
@@ -714,11 +714,9 @@ Item {
         bottomLeftRadius: pill.morphRadius * (1 - gameFlat)
         bottomRightRadius: pill.morphRadius * (1 - gameFlat)
 
-        gradient: Gradient {
-            orientation: Gradient.Horizontal
-            GradientStop { position: 0.0; color: Theme.dyn ? Qt.alpha(Dyn.primary, 0.40) : Theme.border }
-            GradientStop { position: 1.0; color: Theme.border }
-        }
+        color: "transparent"
+        border.width: 1
+        border.color: Theme.border
 
         Rectangle {
             id: bodyInner
@@ -730,8 +728,8 @@ Item {
             bottomLeftRadius: Math.max(0, body.bottomLeftRadius - 1)
             bottomRightRadius: Math.max(0, body.bottomRightRadius - 1)
             gradient: Gradient {
-                GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Flags.pillOpacity) }
-                GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Flags.pillOpacity) }
+                GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Theme.cardTop.a * Flags.pillOpacity) }
+                GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Theme.cardBot.a * Flags.pillOpacity) }
             }
 
             Rectangle {
