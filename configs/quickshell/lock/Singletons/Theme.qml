@@ -14,13 +14,13 @@ Singleton {
     property color verm:   dyn ? Qt.darker(Dyn.primary, 1.18) : "#c0442b"
     Behavior on verm { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color cream:  dyn ? Dyn.cream : "#e6d6cb"
+    property color cream:  dyn ? Dyn.cream : "#fcfbfb"
     Behavior on cream { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color bright: dyn ? Dyn.bright : "#fff6f0"
+    property color bright: dyn ? Dyn.bright : "#fefefe"
     Behavior on bright { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color dim:    dyn ? Dyn.dim : "#8a7d74"
+    property color dim:    dyn ? Dyn.dim : "#f7f5f4"
     Behavior on dim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     readonly property string font:  "SF Pro Display"

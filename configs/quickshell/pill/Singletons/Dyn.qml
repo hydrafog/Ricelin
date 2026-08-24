@@ -54,12 +54,12 @@ Singleton {
             property string on_primary_container: "#ffddb3"
             property string outline: "#9c8f80"
             property string outline_variant: "#4f4539"
-            property string cream: "#e6d6cb"
-            property string bright: "#fff6f0"
-            property string subtle: "#b9a99e"
-            property string dim: "#8a7d74"
-            property string faint: "#6f635b"
-            property string icon_dim: "#cdbfb4"
+            property string cream: "#fcfbfb"
+            property string bright: "#fefefe"
+            property string subtle: "#f9f9f8"
+            property string dim: "#f7f5f4"
+            property string faint: "#f4f3ef"
+            property string icon_dim: "#f9f9f8"
             property string tick_rest: "#cbb6a3"
             property bool is_light: false
         }

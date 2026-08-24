@@ -35,7 +35,7 @@ Item {
         visible: Flags.showGlyphs
         width: Flags.showGlyphs ? implicitWidth : 0
         text: root.kanji
-        color: Theme.dim
+        color: Theme.cream
         font.family: Theme.fontJp
         font.weight: Font.Medium
         font.pixelSize: 16 * root.s
@@ -83,7 +83,7 @@ Item {
         anchors.top: field.bottom
         anchors.topMargin: 2 * root.s
         height: 1
-        color: Theme.faint
+        color: Theme.subtle
         opacity: field.activeFocus ? 0.7 : 0
         Behavior on opacity { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
     }
@@ -94,7 +94,7 @@ Item {
         anchors.right: rightSlot.left
         anchors.rightMargin: rightSlot.width > 0 ? 10 * root.s : 0
         text: root.counterText
-        color: Theme.faint
+        color: Theme.subtle
         font.family: Theme.font
         font.pixelSize: 10.5 * root.s
         font.features: { "tnum": 1 }

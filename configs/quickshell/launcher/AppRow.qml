@@ -12,9 +12,9 @@ Item {
 
     implicitHeight: 50
 
-    readonly property color cream: "#e6d6cb"
-    readonly property color white: "#fff6f0"
-    readonly property color dim2: "#565e6a"
+    readonly property color cream: "#fbfaf8"
+    readonly property color white: "#ffffff"
+    readonly property color dim2: "#f0ede8"
 
     readonly property string secondary: {
         if (entry.genericName && entry.genericName.length > 0) return entry.genericName;
@@ -99,7 +99,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: enter.left
             text: row.secondary
-            color: row.selected ? Qt.rgba(1, 0.965, 0.941, 0.72) : row.dim2
+            color: row.selected ? Qt.rgba(1, 1, 1, 0.90) : row.dim2
             font.family: "Inter"
             font.pixelSize: 12
             horizontalAlignment: Text.AlignRight

@@ -19,9 +19,9 @@ Item {
     readonly property color bgBot: Qt.rgba(1, 1, 1, 0.08)
     readonly property color hair: Qt.rgba(1, 1, 1, 0.20)
     readonly property color verm: "#c0442b"
-    readonly property color cream: "#e6d6cb"
-    readonly property color dim: "#7e8794"
-    readonly property color dim2: "#565e6a"
+    readonly property color cream: "#fbfaf8"
+    readonly property color dim: "#f0ede8"
+    readonly property color dim2: "#e0dcd4"
 
     function moveSelection(delta) {
         if (entries.length === 0) return;
