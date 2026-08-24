@@ -2262,6 +2262,7 @@ Item {
         s: pill.s
         screenName: pill.screenName
         restHeight: pill.restH
+        hoverWidth: pill.hoverW
         suppressed: pill.surfaceOpen || pill.held
         expanded: pill.expanded
         enabled: pill.mode === "osd"

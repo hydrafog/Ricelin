@@ -26,7 +26,7 @@ Item {
 
     /** Matrix shape limits per cell; capped at 2x2 to fit the passive pill height. */
     property int maxDim: 2
-    property real iconSize: 10 * s
+    property real iconSize: 12.5 * s
     property real gap: 2 * s
     property real pad: 3 * s
 
@@ -108,6 +108,9 @@ Item {
                 id: seg
 
                 required property var modelData
+
+                /** Cells of differing heights share one optical midline. */
+                anchors.verticalCenter: parent.verticalCenter
 
                 readonly property string wsName: String(modelData)
                 readonly property bool isActive: root.activeName === wsName
