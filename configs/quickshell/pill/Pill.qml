@@ -681,23 +681,7 @@ Item {
         }
     }
 
-    Rectangle {
-        id: outerBorder
-        anchors.fill: body
-        anchors.margins: -1 * pill.s
-        radius: body.radius + 1 * pill.s
-        topLeftRadius: body.topLeftRadius > 0 ? (body.topLeftRadius + 1 * pill.s) : 0
-        topRightRadius: body.topRightRadius > 0 ? (body.topRightRadius + 1 * pill.s) : 0
-        bottomLeftRadius: body.bottomLeftRadius > 0 ? (body.bottomLeftRadius + 1 * pill.s) : 0
-        bottomRightRadius: body.bottomRightRadius > 0 ? (body.bottomRightRadius + 1 * pill.s) : 0
-        color: "transparent"
-        border.width: 1
-        border.color: Theme.borderRing
-        visible: pill.mode !== "game"
-        z: -1
-    }
-
-    Rectangle {
+    Item {
         id: body
         anchors.fill: parent
 
@@ -708,54 +692,158 @@ Item {
         property real gameFlat: pill.mode === "game" ? 1 : 0
         Behavior on gameFlat { NumberAnimation { duration: Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
 
-        radius: pill.morphRadius
-        topLeftRadius: pill.morphRadius * (1 - gameFlat)
-        topRightRadius: pill.morphRadius * (1 - gameFlat)
-        bottomLeftRadius: pill.morphRadius * (1 - gameFlat)
-        bottomRightRadius: pill.morphRadius * (1 - gameFlat)
-
-        gradient: Gradient {
-            orientation: Gradient.Horizontal
-            GradientStop { position: 0.0; color: Theme.dyn ? Qt.alpha(Dyn.primary, 0.40) : Theme.border }
-            GradientStop { position: 0.5; color: Theme.border }
-            GradientStop { position: 1.0; color: Theme.dyn ? Qt.alpha(Dyn.outlineVariant, 0.40) : Theme.border }
-        }
-
-        Rectangle {
-            id: bodyInner
-            anchors.fill: parent
-            anchors.margins: 1
-            radius: Math.max(0, body.radius - 1)
-            topLeftRadius: Math.max(0, body.topLeftRadius - 1)
-            topRightRadius: Math.max(0, body.topRightRadius - 1)
-            bottomLeftRadius: Math.max(0, body.bottomLeftRadius - 1)
-            bottomRightRadius: Math.max(0, body.bottomRightRadius - 1)
-            gradient: Gradient {
-                GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Theme.cardTop.a * Flags.pillOpacity) }
-                GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Theme.cardBot.a * Flags.pillOpacity) }
-            }
-
-            Rectangle {
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.topMargin: 1
-                anchors.leftMargin: bodyInner.radius * 0.6
-                anchors.rightMargin: bodyInner.radius * 0.6
-                height: 1
-                color: Theme.sheen
-            }
-        }
+        readonly property real flare: (pill.mode === "game" ? 0 : 16) * pill.s
+        readonly property real botR: pill.morphRadius * (1 - gameFlat)
+        readonly property real pw: pill.width
+        readonly property real ph: pill.height
 
         layer.enabled: true
         layer.effect: MultiEffect {
             shadowEnabled: true
             shadowColor: Qt.rgba(0, 0, 0, Theme.shadowOpacity)
             shadowBlur: 0.8
-            shadowVerticalOffset: 4 * pill.s
+            shadowVerticalOffset: 3 * pill.s
+        }
+
+        Shape {
+            id: shapeOuter
+            anchors.fill: parent
+            containsMode: Shape.FillContains
+            visible: pill.mode !== "game"
+            z: -1
+
+            ShapePath {
+                strokeColor: Theme.borderRing
+                strokeWidth: 3
+                fillColor: "transparent"
+                capStyle: ShapePath.FlatCap
+                joinStyle: ShapePath.RoundJoin
+
+                startX: -body.flare
+                startY: 0
+
+                PathArc {
+                    x: 0
+                    y: body.flare
+                    radiusX: body.flare
+                    radiusY: body.flare
+                    direction: PathArc.Clockwise
+                }
+                PathLine {
+                    x: 0
+                    y: Math.max(body.flare, body.ph - body.botR)
+                }
+                PathArc {
+                    x: body.botR
+                    y: body.ph
+                    radiusX: body.botR
+                    radiusY: body.botR
+                    direction: PathArc.Counterclockwise
+                }
+                PathLine {
+                    x: Math.max(body.botR, body.pw - body.botR)
+                    y: body.ph
+                }
+                PathArc {
+                    x: body.pw
+                    y: Math.max(body.flare, body.ph - body.botR)
+                    radiusX: body.botR
+                    radiusY: body.botR
+                    direction: PathArc.Counterclockwise
+                }
+                PathLine {
+                    x: body.pw
+                    y: body.flare
+                }
+                PathArc {
+                    x: body.pw + body.flare
+                    y: 0
+                    radiusX: body.flare
+                    radiusY: body.flare
+                    direction: PathArc.Clockwise
+                }
+            }
+        }
+
+        Shape {
+            id: shapeInner
+            anchors.fill: parent
+            containsMode: Shape.FillContains
+            z: 0
+
+            ShapePath {
+                strokeColor: Theme.border
+                strokeWidth: 1
+                capStyle: ShapePath.FlatCap
+                joinStyle: ShapePath.RoundJoin
+
+                fillGradient: LinearGradient {
+                    x1: 0; y1: 0; x2: 0; y2: body.ph
+                    GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Theme.cardTop.a * Flags.pillOpacity) }
+                    GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Theme.cardBot.a * Flags.pillOpacity) }
+                }
+
+                startX: -body.flare
+                startY: 0
+
+                PathArc {
+                    x: 0
+                    y: body.flare
+                    radiusX: body.flare
+                    radiusY: body.flare
+                    direction: PathArc.Clockwise
+                }
+                PathLine {
+                    x: 0
+                    y: Math.max(body.flare, body.ph - body.botR)
+                }
+                PathArc {
+                    x: body.botR
+                    y: body.ph
+                    radiusX: body.botR
+                    radiusY: body.botR
+                    direction: PathArc.Counterclockwise
+                }
+                PathLine {
+                    x: Math.max(body.botR, body.pw - body.botR)
+                    y: body.ph
+                }
+                PathArc {
+                    x: body.pw
+                    y: Math.max(body.flare, body.ph - body.botR)
+                    radiusX: body.botR
+                    radiusY: body.botR
+                    direction: PathArc.Counterclockwise
+                }
+                PathLine {
+                    x: body.pw
+                    y: body.flare
+                }
+                PathArc {
+                    x: body.pw + body.flare
+                    y: 0
+                    radiusX: body.flare
+                    radiusY: body.flare
+                    direction: PathArc.Clockwise
+                }
+                PathLine {
+                    x: -body.flare
+                    y: 0
+                }
+            }
+        }
+
+        Rectangle {
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.topMargin: 1
+            anchors.leftMargin: body.botR * 0.5
+            anchors.rightMargin: body.botR * 0.5
+            height: 1
+            color: Theme.sheen
         }
     }
-
     /**
      * Rest anchor for Ame: the 時 kanji centre. The idle outline condenses into
      * the bead here before it moves.
