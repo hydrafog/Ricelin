@@ -53,6 +53,7 @@ Singleton {
     Behavior on activeBorder { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color border:   Qt.rgba(1, 1, 1, 0.20)
+    readonly property color borderRing: dyn ? Qt.alpha(Dyn.surface, 0.70) : Qt.rgba(0, 0, 0, 0.40)
     Behavior on border { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color shadow:     Qt.rgba(0, 0, 0, 0.35)

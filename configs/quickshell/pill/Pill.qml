@@ -684,99 +684,17 @@ Item {
     Rectangle {
         id: outerBorder
         anchors.fill: body
-        anchors.margins: -3 * pill.s
-        radius: body.radius + 3 * pill.s
-        topLeftRadius: 0
-        topRightRadius: 0
-        bottomLeftRadius: body.bottomLeftRadius > 0 ? (body.bottomLeftRadius + 3 * pill.s) : 0
-        bottomRightRadius: body.bottomRightRadius > 0 ? (body.bottomRightRadius + 3 * pill.s) : 0
+        anchors.margins: -1 * pill.s
+        radius: body.radius + 1 * pill.s
+        topLeftRadius: body.topLeftRadius > 0 ? (body.topLeftRadius + 1 * pill.s) : 0
+        topRightRadius: body.topRightRadius > 0 ? (body.topRightRadius + 1 * pill.s) : 0
+        bottomLeftRadius: body.bottomLeftRadius > 0 ? (body.bottomLeftRadius + 1 * pill.s) : 0
+        bottomRightRadius: body.bottomRightRadius > 0 ? (body.bottomRightRadius + 1 * pill.s) : 0
         color: "transparent"
-        border.width: 3 * pill.s
-        border.color: Qt.rgba(0, 0, 0, 0.125)
+        border.width: 1
+        border.color: Theme.borderRing
         visible: pill.mode !== "game"
         z: -1
-    }
-
-    Canvas {
-        id: leftWing
-        readonly property real earR: (pill.mode === "game" ? 0 : 16) * pill.s
-        anchors.top: body.top
-        anchors.right: body.left
-        anchors.rightMargin: -1
-        width: earR
-        height: earR
-        visible: earR > 1
-        z: 0
-
-        Connections {
-            target: Theme
-            function onCardTopChanged() { leftWing.requestPaint(); }
-            function onBorderChanged() { leftWing.requestPaint(); }
-        }
-
-        onPaint: {
-            const ctx = getContext("2d");
-            ctx.reset();
-            const w = width;
-            const h = height;
-
-            ctx.fillStyle = Qt.alpha(Theme.cardTop, Theme.cardTop.a * Flags.pillOpacity);
-            ctx.beginPath();
-            ctx.moveTo(w, 0);
-            ctx.lineTo(0, 0);
-            ctx.arcTo(w, 0, w, h, w);
-            ctx.lineTo(w, h);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.strokeStyle = Theme.border;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.arcTo(w, 0, w, h, w);
-            ctx.stroke();
-        }
-    }
-
-    Canvas {
-        id: rightWing
-        readonly property real earR: (pill.mode === "game" ? 0 : 16) * pill.s
-        anchors.top: body.top
-        anchors.left: body.right
-        anchors.leftMargin: -1
-        width: earR
-        height: earR
-        visible: earR > 1
-        z: 0
-
-        Connections {
-            target: Theme
-            function onCardTopChanged() { rightWing.requestPaint(); }
-            function onBorderChanged() { rightWing.requestPaint(); }
-        }
-
-        onPaint: {
-            const ctx = getContext("2d");
-            ctx.reset();
-            const w = width;
-            const h = height;
-
-            ctx.fillStyle = Qt.alpha(Theme.cardTop, Theme.cardTop.a * Flags.pillOpacity);
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(w, 0);
-            ctx.arcTo(0, 0, 0, h, w);
-            ctx.lineTo(0, h);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.strokeStyle = Theme.border;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(w, 0);
-            ctx.arcTo(0, 0, 0, h, w);
-            ctx.stroke();
-        }
     }
 
     Rectangle {
@@ -791,22 +709,25 @@ Item {
         Behavior on gameFlat { NumberAnimation { duration: Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
 
         radius: pill.morphRadius
-        topLeftRadius: 0
-        topRightRadius: 0
+        topLeftRadius: pill.morphRadius * (1 - gameFlat)
+        topRightRadius: pill.morphRadius * (1 - gameFlat)
         bottomLeftRadius: pill.morphRadius * (1 - gameFlat)
         bottomRightRadius: pill.morphRadius * (1 - gameFlat)
 
-        color: "transparent"
-        border.width: 1
-        border.color: Theme.border
+        gradient: Gradient {
+            orientation: Gradient.Horizontal
+            GradientStop { position: 0.0; color: Theme.dyn ? Qt.alpha(Dyn.primary, 0.40) : Theme.border }
+            GradientStop { position: 0.5; color: Theme.border }
+            GradientStop { position: 1.0; color: Theme.dyn ? Qt.alpha(Dyn.outlineVariant, 0.40) : Theme.border }
+        }
 
         Rectangle {
             id: bodyInner
             anchors.fill: parent
             anchors.margins: 1
             radius: Math.max(0, body.radius - 1)
-            topLeftRadius: 0
-            topRightRadius: 0
+            topLeftRadius: Math.max(0, body.topLeftRadius - 1)
+            topRightRadius: Math.max(0, body.topRightRadius - 1)
             bottomLeftRadius: Math.max(0, body.bottomLeftRadius - 1)
             bottomRightRadius: Math.max(0, body.bottomRightRadius - 1)
             gradient: Gradient {
@@ -831,7 +752,7 @@ Item {
             shadowEnabled: true
             shadowColor: Qt.rgba(0, 0, 0, Theme.shadowOpacity)
             shadowBlur: 0.8
-            shadowVerticalOffset: 6 * pill.s
+            shadowVerticalOffset: 4 * pill.s
         }
     }
 
