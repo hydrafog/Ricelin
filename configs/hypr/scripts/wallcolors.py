@@ -134,16 +134,15 @@ def run_matugen_hex(source_hex):
     return json.loads(out.stdout)
 
 
-def build_pill(colors, is_light=False):
+def build_pill(colors):
     """Map Material You tokens to the pill JSON consumed by Dyn.qml.
 
     Surface tiers and accent tokens map directly. The 7-step text ramp
     (cream → faint) is interpolated from on_surface (brightest readable text)
     down through on_surface_variant and outline_variant (faintest).
-    Toggles contrast for bright vs dark wallpapers.
+    Always ensures clean, luminous white/cream font tones.
     """
-    mode_key = "light" if is_light else "dark"
-    d = lambda key: colors[key].get(mode_key, colors[key].get("dark", "#ffffff"))
+    d = lambda key: colors[key]["dark"]
 
     # Surface containers — direct from Material You
     pill = {
@@ -153,7 +152,6 @@ def build_pill(colors, is_light=False):
         "surface_container_high": d("surface_container_high"),
         "surface_container_highest": d("surface_container_highest"),
         "outline_variant": d("outline_variant"),
-        "is_light": is_light,
     }
 
     # Accent tokens
@@ -161,31 +159,23 @@ def build_pill(colors, is_light=False):
     pill["primary_container"] = d("primary_container")
     pill["outline"] = d("outline")
 
+    opc = d("on_primary_container")
+    if hex_to_hls(opc)[1] > 0.92:
+        opc = blend(d("on_surface"), "#ffffff", 0.4)
+    pill["on_primary_container"] = opc
+
+    # 7-step luminous white/cream text ramp
     on_surf = d("on_surface")
     on_surf_var = d("on_surface_variant")
     outline_var = d("outline_variant")
 
-    if is_light:
-        pill["bright"] = "#101216"
-        pill["cream"] = "#22252a"
-        pill["subtle"] = on_surf_var
-        pill["dim"] = blend(on_surf_var, outline_var, 0.45)
-        pill["faint"] = outline_var
-        pill["icon_dim"] = blend(on_surf, on_surf_var, 0.55)
-        pill["tick_rest"] = blend(on_surf, on_surf_var, 0.65)
-        pill["on_primary_container"] = d("on_primary_container")
-    else:
-        pill["bright"] = blend(on_surf, "#ffffff", 0.35)
-        pill["cream"] = blend(on_surf, "#ffffff", 0.15)
-        pill["subtle"] = on_surf_var
-        pill["dim"] = blend(on_surf_var, outline_var, 0.45)
-        pill["faint"] = outline_var
-        pill["icon_dim"] = blend(on_surf, on_surf_var, 0.55)
-        pill["tick_rest"] = blend(on_surf, on_surf_var, 0.65)
-        opc = d("on_primary_container")
-        if hex_to_hls(opc)[1] > 0.92:
-            opc = blend(d("on_surface"), "#ffffff", 0.4)
-        pill["on_primary_container"] = opc
+    pill["bright"] = blend(on_surf, "#ffffff", 0.50)
+    pill["cream"] = blend(on_surf, "#ffffff", 0.25)
+    pill["subtle"] = on_surf_var
+    pill["dim"] = blend(on_surf_var, outline_var, 0.45)
+    pill["faint"] = outline_var
+    pill["icon_dim"] = blend(on_surf, on_surf_var, 0.55)
+    pill["tick_rest"] = blend(on_surf, on_surf_var, 0.65)
 
     return pill
 
@@ -732,15 +722,8 @@ def main():
     if not colors:
         return 0
 
-    # Check top wallpaper luminance for contrast
-    is_light = False
-    if len(sys.argv) > 1 and sys.argv[1] != "--hue" and Path(sys.argv[1]).is_file():
-        is_light = get_wallpaper_luminance(sys.argv[1]) > 0.48
-    elif len(sys.argv) > 3 and sys.argv[3] == "light":
-        is_light = True
-
     # Build and write the pill JSON
-    pill = build_pill(colors, is_light=is_light)
+    pill = build_pill(colors)
     (CACHE / "colors.json").write_text(json.dumps(pill, indent=2) + "\n")
 
     # Render fastfetch config

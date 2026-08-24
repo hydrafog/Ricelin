@@ -697,6 +697,88 @@ Item {
         z: -1
     }
 
+    Canvas {
+        id: leftWing
+        readonly property real earR: (pill.mode === "game" ? 0 : 16) * pill.s
+        anchors.top: body.top
+        anchors.right: body.left
+        anchors.rightMargin: -1
+        width: earR
+        height: earR
+        visible: earR > 1
+        z: 0
+
+        Connections {
+            target: Theme
+            function onCardTopChanged() { leftWing.requestPaint(); }
+            function onBorderChanged() { leftWing.requestPaint(); }
+        }
+
+        onPaint: {
+            const ctx = getContext("2d");
+            ctx.reset();
+            const w = width;
+            const h = height;
+
+            ctx.fillStyle = Qt.alpha(Theme.cardTop, Theme.cardTop.a * Flags.pillOpacity);
+            ctx.beginPath();
+            ctx.moveTo(w, 0);
+            ctx.lineTo(0, 0);
+            ctx.arcTo(w, 0, w, h, w);
+            ctx.lineTo(w, h);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = Theme.border;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arcTo(w, 0, w, h, w);
+            ctx.stroke();
+        }
+    }
+
+    Canvas {
+        id: rightWing
+        readonly property real earR: (pill.mode === "game" ? 0 : 16) * pill.s
+        anchors.top: body.top
+        anchors.left: body.right
+        anchors.leftMargin: -1
+        width: earR
+        height: earR
+        visible: earR > 1
+        z: 0
+
+        Connections {
+            target: Theme
+            function onCardTopChanged() { rightWing.requestPaint(); }
+            function onBorderChanged() { rightWing.requestPaint(); }
+        }
+
+        onPaint: {
+            const ctx = getContext("2d");
+            ctx.reset();
+            const w = width;
+            const h = height;
+
+            ctx.fillStyle = Qt.alpha(Theme.cardTop, Theme.cardTop.a * Flags.pillOpacity);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(w, 0);
+            ctx.arcTo(0, 0, 0, h, w);
+            ctx.lineTo(0, h);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = Theme.border;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(w, 0);
+            ctx.arcTo(0, 0, 0, h, w);
+            ctx.stroke();
+        }
+    }
+
     Rectangle {
         id: body
         anchors.fill: parent
