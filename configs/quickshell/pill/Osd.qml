@@ -8,6 +8,8 @@ Item {
     id: root
 
     property real s: 1
+    /** Passive pill height; the workspace flash borrows it so switching never morphs taller. */
+    property real restHeight: 38 * s
     property string screenName: ""
     property bool suppressed: false
     property bool expanded: false
@@ -51,7 +53,7 @@ Item {
     readonly property real desiredW: kind === "workspace" ? Math.max(120 * s, wsIndicator.implicitWidth + 40 * s)
         : (kind === "track" ? 344 * s : (kind === "record" ? 256 * s : 248 * s))
     readonly property real desiredH: kind === "track" ? 64 * s
-        : (kind === "workspace" ? 52 * s : 44 * s)
+        : (kind === "workspace" ? restHeight : 44 * s)
 
     /**
      * Active workspace name on this monitor. Any switch (Super+arrow,

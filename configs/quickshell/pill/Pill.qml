@@ -2261,6 +2261,7 @@ Item {
         anchors.bottomMargin: 12 * pill.s
         s: pill.s
         screenName: pill.screenName
+        restHeight: pill.restH
         suppressed: pill.surfaceOpen || pill.held
         expanded: pill.expanded
         enabled: pill.mode === "osd"

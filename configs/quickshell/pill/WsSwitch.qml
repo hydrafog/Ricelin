@@ -10,7 +10,7 @@ import "Singletons"
  * Workspace switch indicator for the workspace OSD flash: a fixed run of ten
  * bare cells (workspaces 1-10, always present whether populated or not), no
  * backgrounds. Each populated cell arranges its opened-window app icons into a
- * growing square matrix — 1x1, 2x2, then 3x3 — past which the corner slot
+ * growing square matrix — 1x1 then 2x2 — past which the corner slot
  * becomes a +n chip. The active cell gains a vermillion outline; empty ones
  * carry a lone marker dot. Clicking a cell focuses the workspace, clicking an
  * icon focuses that window, both via the Hyprland-lua dispatcher.
@@ -24,9 +24,9 @@ Item {
     property string screenName: ""
     property real s: 1
 
-    /** Matrix shape limits per cell. */
-    property int maxDim: 3
-    property real iconSize: 11 * s
+    /** Matrix shape limits per cell; capped at 2x2 to fit the passive pill height. */
+    property int maxDim: 2
+    property real iconSize: 10 * s
     property real gap: 2 * s
     property real pad: 3 * s
 
@@ -124,8 +124,8 @@ Item {
                 /** Icons actually drawn, reserving the corner slot for +n. */
                 readonly property int drawn: overflow > 0 ? Math.min(shown, slots - 1) : shown
 
-                width: dim === 0 ? 15 * root.s : dim * root.iconSize + (dim - 1) * root.gap + 2 * root.pad
-                height: dim === 0 ? 15 * root.s : dim * root.iconSize + (dim - 1) * root.gap + 2 * root.pad
+                width: dim === 0 ? 13 * root.s : dim * root.iconSize + (dim - 1) * root.gap + 2 * root.pad
+                height: dim === 0 ? 13 * root.s : dim * root.iconSize + (dim - 1) * root.gap + 2 * root.pad
                 radius: Motion.rSmall * root.s
                 color: "transparent"
                 border.width: 1
