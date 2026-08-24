@@ -700,69 +700,9 @@ Item {
         layer.enabled: true
         layer.effect: MultiEffect {
             shadowEnabled: true
-            shadowColor: Qt.rgba(0, 0, 0, Theme.shadowOpacity)
-            shadowBlur: 0.8
-            shadowVerticalOffset: 3 * pill.s
-        }
-
-        Shape {
-            id: shapeOuter
-            anchors.fill: parent
-            containsMode: Shape.FillContains
-            visible: pill.mode !== "game"
-            z: -1
-
-            ShapePath {
-                strokeColor: Theme.borderRing
-                strokeWidth: 3
-                fillColor: "transparent"
-                capStyle: ShapePath.FlatCap
-                joinStyle: ShapePath.RoundJoin
-
-                startX: -body.flare
-                startY: 0
-
-                PathArc {
-                    x: 0
-                    y: body.flare
-                    radiusX: body.flare
-                    radiusY: body.flare
-                    direction: PathArc.Clockwise
-                }
-                PathLine {
-                    x: 0
-                    y: Math.max(body.flare, body.ph - body.botR)
-                }
-                PathArc {
-                    x: body.botR
-                    y: body.ph
-                    radiusX: body.botR
-                    radiusY: body.botR
-                    direction: PathArc.Counterclockwise
-                }
-                PathLine {
-                    x: Math.max(body.botR, body.pw - body.botR)
-                    y: body.ph
-                }
-                PathArc {
-                    x: body.pw
-                    y: Math.max(body.flare, body.ph - body.botR)
-                    radiusX: body.botR
-                    radiusY: body.botR
-                    direction: PathArc.Counterclockwise
-                }
-                PathLine {
-                    x: body.pw
-                    y: body.flare
-                }
-                PathArc {
-                    x: body.pw + body.flare
-                    y: 0
-                    radiusX: body.flare
-                    radiusY: body.flare
-                    direction: PathArc.Clockwise
-                }
-            }
+            shadowColor: Qt.rgba(0, 0, 0, 0.22)
+            shadowBlur: 0.95
+            shadowVerticalOffset: 2 * pill.s
         }
 
         Shape {

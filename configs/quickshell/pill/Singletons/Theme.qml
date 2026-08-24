@@ -56,7 +56,7 @@ Singleton {
     readonly property color borderRing: dyn ? Qt.alpha(Dyn.surface, 0.70) : Qt.rgba(0, 0, 0, 0.40)
     Behavior on border { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color shadow:     Qt.rgba(0, 0, 0, 0.35)
+    property color shadow:     Qt.rgba(0, 0, 0, 0.20)
     property color tileBg:   Qt.rgba(1, 1, 1, 0.05)
     Behavior on tileBg { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
@@ -109,7 +109,7 @@ Singleton {
     readonly property color frameBg:      Qt.rgba(1, 1, 1, 0.08)
     readonly property color frameBorder:  Qt.rgba(1, 1, 1, 0.20)
     readonly property color creamMenu:     Qt.alpha(cream, 0.82)
-    readonly property real shadowOpacity: 0.35
+    readonly property real shadowOpacity: 0.20
     /**
      * Snapshot of the system families, not a binding: Qt.fontFamilies() is not
      * notifiable, so a font dropped onto the pill re-registers through
