@@ -595,13 +595,11 @@ Item {
         if (mode !== "hover") {
             hoverSoulGate = false;
             soulTarget = "";
-            soulWsIndex = -1;
         }
     }
     onHoverSoulGateChanged: if (hoverSoulGate) kanjiFlashAnim.restart()
 
     property string soulTarget: ""
-    property int soulWsIndex: -1
 
     property real kanjiFlash: 0
 
@@ -832,13 +830,7 @@ Item {
             return recorderIcon.mapToItem(pill, recorderIcon.width / 2, recorderIcon.height + drop * 0.55);
         if (soulTarget === "sysmon")
             return sysmonIcon.mapToItem(pill, sysmonIcon.width / 2, sysmonIcon.height + drop * 0.55);
-        if (soulTarget === "ws" && soulWsIndex >= 0) {
-            void ws.activeName;
-            void ws.width;
-            const p = ws.mapToItem(pill, ws.slotCenterX(soulWsIndex), ws.height / 2);
-            return Qt.point(p.x, p.y + drop);
-        }
-        return ws.mapToItem(pill, ws.activeDotPoint.x, ws.activeDotPoint.y + drop);
+        return hoverClock.mapToItem(pill, hoverClock.width / 2, hoverClock.height + drop * 0.55);
     }
 
     /**
@@ -1482,29 +1474,8 @@ Item {
                 color: Theme.hair
             }
 
-            Workspaces {
-                id: ws
-                anchors.verticalCenter: parent.verticalCenter
-                width: implicitWidth
-                screenName: pill.screenName
-                s: pill.s
-                gap: 8 * pill.s
-                enabled: hover.live
-                onHoverIndexChanged: if (hoverIndex >= 0) {
-                    pill.soulTarget = "ws";
-                    pill.soulWsIndex = hoverIndex;
-                }
-            }
-
-            Rectangle {
-                anchors.verticalCenter: parent.verticalCenter
-                width: 1
-                height: 22 * pill.s
-                color: Theme.hair
-            }
-
             Row {
-                id: statusRow
+                id: contentRow
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 12 * pill.s
 
@@ -1567,6 +1538,20 @@ Item {
                     barWindow: pill.barWindow
                     enabled: hover.live
                 }
+
+            }
+
+            Rectangle {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 1
+                height: 22 * pill.s
+                color: Theme.hair
+            }
+
+            Row {
+                id: sysRow
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 12 * pill.s
 
                 Item {
                     id: dndIcon

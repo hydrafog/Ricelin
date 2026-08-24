@@ -54,11 +54,12 @@ Item {
 
     /**
      * Active workspace name on this monitor. Any switch (Super+arrow,
-     * Super+wheel, clicking a dot) changes it, so flashing the workspace OSD
-     * here briefly morphs the pill open to show where you landed. The arm timer
-     * swallows the initial populate, so login doesn't flash. Skipped while the
-     * pill is expanded: the hover/surface pill already shows the live dots with
-     * the active one marked, so the OSD would only be a redundant morph.
+     * Super+wheel, clicking a segment) changes it, so flashing the workspace OSD
+     * here briefly morphs the pill open to show where you landed, with each
+     * workspace's opened windows as app icons. The arm timer swallows the
+     * initial populate, so login doesn't flash. Skipped while the pill is
+     * expanded: the hover/surface pill already shows live state, so the OSD
+     * would only be a redundant morph.
      */
     readonly property string activeWsName: {
         var mons = Hyprland.monitors.values;
@@ -511,13 +512,11 @@ Item {
         visible: opacity > 0.01
         Behavior on opacity { NumberAnimation { duration: 150 } }
 
-        Workspaces {
+        WsSwitch {
             id: wsIndicator
             anchors.centerIn: parent
             screenName: root.screenName
             s: root.s
-            gap: 8 * root.s
-            enabled: false
         }
     }
 
