@@ -641,7 +641,7 @@ PillSurface {
                             ? (cell.current ? Theme.todayWarm
                                 : (cell.hasEvent ? Theme.flameGlow
                                     : (cell.weekend ? Theme.subtle : Theme.cream)))
-                            : Theme.ghost
+                            : Theme.faint
                         opacity: cell.inMonth && !cell.current && !cell.weekend && !cell.hasEvent ? 0.85 : 1.0
                         font.family: Theme.font
                         font.pixelSize: 11 * root.s

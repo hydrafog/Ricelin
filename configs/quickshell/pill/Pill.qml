@@ -1439,27 +1439,6 @@ Item {
             anchors.centerIn: parent
             spacing: 20 * pill.s
 
-            Workspaces {
-                id: ws
-                anchors.verticalCenter: parent.verticalCenter
-                width: implicitWidth
-                screenName: pill.screenName
-                s: pill.s
-                gap: 8 * pill.s
-                enabled: hover.live
-                onHoverIndexChanged: if (hoverIndex >= 0) {
-                    pill.soulTarget = "ws";
-                    pill.soulWsIndex = hoverIndex;
-                }
-            }
-
-            Rectangle {
-                anchors.verticalCenter: parent.verticalCenter
-                width: 1
-                height: 22 * pill.s
-                color: Theme.hair
-            }
-
             Item {
                 anchors.verticalCenter: parent.verticalCenter
                 width: hoverClock.implicitWidth
@@ -1471,10 +1450,10 @@ Item {
                     text: clock.date
                     color: Theme.cream
                     font.family: Theme.font
-                    font.pixelSize: 18 * pill.s
+                    font.pixelSize: 14 * pill.s
                     font.weight: Font.DemiBold
                     font.capitalization: Font.AllUppercase
-                    font.letterSpacing: 1.6 * pill.s
+                    font.letterSpacing: 1.4 * pill.s
                 }
 
                 MouseArea {
@@ -1484,6 +1463,27 @@ Item {
                     enabled: hover.live
                     cursorShape: Qt.PointingHandCursor
                     onClicked: pill.requestSurface("calendar")
+                }
+            }
+
+            Rectangle {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 1
+                height: 22 * pill.s
+                color: Theme.hair
+            }
+
+            Workspaces {
+                id: ws
+                anchors.verticalCenter: parent.verticalCenter
+                width: implicitWidth
+                screenName: pill.screenName
+                s: pill.s
+                gap: 8 * pill.s
+                enabled: hover.live
+                onHoverIndexChanged: if (hoverIndex >= 0) {
+                    pill.soulTarget = "ws";
+                    pill.soulWsIndex = hoverIndex;
                 }
             }
 
