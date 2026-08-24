@@ -159,7 +159,7 @@ Item {
                     radius: height / 2
                     visible: !seg.hasWins
                     color: seg.isActive ? Theme.vermLit : Theme.cream
-                    opacity: seg.isActive ? 1.0 : (seg.area.containsMouse ? 0.7 : 0.3)
+                    opacity: seg.isActive ? 1.0 : (area.containsMouse ? 0.7 : 0.3)
                     Behavior on opacity { NumberAnimation { duration: Motion.fast } }
                 }
 
