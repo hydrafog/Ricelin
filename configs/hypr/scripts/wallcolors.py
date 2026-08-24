@@ -134,6 +134,23 @@ def run_matugen_hex(source_hex):
     return json.loads(out.stdout)
 
 
+def ensure_accent_contrast(hex_color, max_lum=0.38):
+    """Clamp perceived luminance of accent colors so they contrast against frosted glass/white."""
+    r, g, b = (int(hex_color[i:i+2], 16) / 255.0 for i in (1, 3, 5))
+    lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    if lum <= max_lum:
+        return hex_color
+
+    h, l, s = hex_to_hls(hex_color)
+    for _ in range(20):
+        r_c, g_c, b_c = colorsys.hls_to_rgb(h, l, min(1.0, max(s, 0.85)))
+        cur_lum = 0.2126 * r_c + 0.7152 * g_c + 0.0722 * b_c
+        if abs(cur_lum - max_lum) < 0.01:
+            break
+        l *= (max_lum / cur_lum) ** 0.5
+    return hls_to_hex(h, l, min(1.0, max(s, 0.85)))
+
+
 def build_pill(colors):
     """Map Material You tokens to the pill JSON consumed by Dyn.qml.
 
@@ -155,7 +172,7 @@ def build_pill(colors):
     }
 
     # Accent tokens
-    pill["primary"] = d("primary")
+    pill["primary"] = ensure_accent_contrast(d("primary"), max_lum=0.38)
     pill["primary_container"] = d("primary_container")
     pill["outline"] = d("outline")
 
