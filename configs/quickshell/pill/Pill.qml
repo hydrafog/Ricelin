@@ -683,7 +683,13 @@ Item {
 
     Item {
         id: body
-        anchors.fill: parent
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: -flare
+        anchors.rightMargin: -flare
+        anchors.bottomMargin: -16 * pill.s
 
         /**
          * Corner flatness rides the morph curve so docking into the game bar
@@ -698,23 +704,26 @@ Item {
         readonly property real ph: pill.height
 
         layer.enabled: true
+        layer.smooth: true
+        layer.samples: 4
         layer.effect: MultiEffect {
             shadowEnabled: true
-            shadowColor: Qt.rgba(0, 0, 0, 0.22)
-            shadowBlur: 0.95
-            shadowVerticalOffset: 2 * pill.s
+            shadowColor: Qt.rgba(0, 0, 0, 0.20)
+            shadowBlur: 0.8
+            shadowVerticalOffset: 3 * pill.s
+            autoPaddingEnabled: true
         }
 
         Shape {
             id: shapeInner
             anchors.fill: parent
             containsMode: Shape.FillContains
-            z: 0
+            layer.samples: 4
 
             ShapePath {
                 strokeColor: Theme.border
                 strokeWidth: 1
-                capStyle: ShapePath.FlatCap
+                capStyle: ShapePath.RoundCap
                 joinStyle: ShapePath.RoundJoin
 
                 fillGradient: LinearGradient {
@@ -723,51 +732,51 @@ Item {
                     GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Theme.cardBot.a * Flags.pillOpacity) }
                 }
 
-                startX: -body.flare
+                startX: 0
                 startY: 0
 
                 PathArc {
-                    x: 0
+                    x: body.flare
                     y: body.flare
                     radiusX: body.flare
                     radiusY: body.flare
                     direction: PathArc.Clockwise
                 }
                 PathLine {
-                    x: 0
+                    x: body.flare
                     y: Math.max(body.flare, body.ph - body.botR)
                 }
                 PathArc {
-                    x: body.botR
+                    x: body.flare + body.botR
                     y: body.ph
                     radiusX: body.botR
                     radiusY: body.botR
                     direction: PathArc.Counterclockwise
                 }
                 PathLine {
-                    x: Math.max(body.botR, body.pw - body.botR)
+                    x: Math.max(body.flare + body.botR, body.flare + body.pw - body.botR)
                     y: body.ph
                 }
                 PathArc {
-                    x: body.pw
+                    x: body.flare + body.pw
                     y: Math.max(body.flare, body.ph - body.botR)
                     radiusX: body.botR
                     radiusY: body.botR
                     direction: PathArc.Counterclockwise
                 }
                 PathLine {
-                    x: body.pw
+                    x: body.flare + body.pw
                     y: body.flare
                 }
                 PathArc {
-                    x: body.pw + body.flare
+                    x: 2 * body.flare + body.pw
                     y: 0
                     radiusX: body.flare
                     radiusY: body.flare
                     direction: PathArc.Clockwise
                 }
                 PathLine {
-                    x: -body.flare
+                    x: 0
                     y: 0
                 }
             }
@@ -778,8 +787,8 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.topMargin: 1
-            anchors.leftMargin: body.botR * 0.5
-            anchors.rightMargin: body.botR * 0.5
+            anchors.leftMargin: body.flare + body.botR * 0.5
+            anchors.rightMargin: body.flare + body.botR * 0.5
             height: 1
             color: Theme.sheen
         }
