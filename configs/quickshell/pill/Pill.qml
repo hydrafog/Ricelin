@@ -1465,29 +1465,16 @@ Item {
                 width: hoverClock.implicitWidth
                 height: hoverClock.implicitHeight
 
-                Column {
+                Text {
                     id: hoverClock
                     anchors.centerIn: parent
-                    spacing: 2 * pill.s
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: clock.hhmm
-                        color: Theme.cream
-                        font.family: Theme.font
-                        font.pixelSize: 18 * pill.s
-                        font.weight: Font.DemiBold
-                        font.features: { "tnum": 1 }
-                    }
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: clock.date
-                        color: Theme.dim
-                        font.family: Theme.font
-                        font.pixelSize: 8.5 * pill.s
-                        font.weight: Font.Medium
-                        font.capitalization: Font.AllUppercase
-                        font.letterSpacing: 1.6 * pill.s
-                    }
+                    text: clock.date
+                    color: Theme.cream
+                    font.family: Theme.font
+                    font.pixelSize: 18 * pill.s
+                    font.weight: Font.DemiBold
+                    font.capitalization: Font.AllUppercase
+                    font.letterSpacing: 1.6 * pill.s
                 }
 
                 MouseArea {
