@@ -34,13 +34,13 @@ Singleton {
     property color vermDeep: dyn ? Dyn.primaryContainer : "#a3371f"
     Behavior on vermDeep { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color cream:    dyn ? Dyn.cream : "#e6d6cb"
+    property color cream:    dyn ? Dyn.cream : "#f0ede8"
     Behavior on cream { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color bright:   dyn ? Dyn.bright : "#fff6f0"
+    property color bright:   dyn ? Dyn.bright : "#ffffff"
     Behavior on bright { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color dim:      dyn ? Dyn.dim : "#8a7d74"
+    property color dim:      dyn ? Dyn.dim : "#c4c0b6"
     Behavior on dim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color cardTop:  Qt.rgba(1, 1, 1, 0.08)
@@ -60,13 +60,13 @@ Singleton {
     property color tileBg:   Qt.rgba(1, 1, 1, 0.05)
     Behavior on tileBg { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color subtle:   dyn ? Dyn.subtle : "#b9a99e"
+    property color subtle:   dyn ? Dyn.subtle : "#dedad2"
     Behavior on subtle { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color faint:    dyn ? Dyn.faint : "#6f635b"
+    property color faint:    dyn ? Dyn.faint : "#a6a298"
     Behavior on faint { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color iconDim:  dyn ? Dyn.iconDim : "#cdbfb4"
+    property color iconDim:  dyn ? Dyn.iconDim : "#dedad2"
     Behavior on iconDim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     readonly property color hair:     Qt.alpha(cream, 0.13)

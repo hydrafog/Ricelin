@@ -169,13 +169,13 @@ def build_pill(colors):
     on_surf_var = d("on_surface_variant")
     outline_var = d("outline_variant")
 
-    pill["bright"] = blend(on_surf, "#ffffff", 0.50)
-    pill["cream"] = blend(on_surf, "#ffffff", 0.25)
-    pill["subtle"] = on_surf_var
-    pill["dim"] = blend(on_surf_var, outline_var, 0.45)
-    pill["faint"] = outline_var
-    pill["icon_dim"] = blend(on_surf, on_surf_var, 0.55)
-    pill["tick_rest"] = blend(on_surf, on_surf_var, 0.65)
+    pill["bright"] = blend(on_surf, "#ffffff", 0.85)
+    pill["cream"] = blend(on_surf, "#ffffff", 0.65)
+    pill["subtle"] = blend(on_surf, "#ffffff", 0.45)
+    pill["dim"] = blend(on_surf, "#ffffff", 0.25)
+    pill["faint"] = blend(on_surf_var, "#ffffff", 0.25)
+    pill["icon_dim"] = blend(on_surf, "#ffffff", 0.50)
+    pill["tick_rest"] = blend(on_surf, "#ffffff", 0.40)
 
     return pill
 
