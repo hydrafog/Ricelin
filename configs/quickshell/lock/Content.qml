@@ -283,11 +283,19 @@ Item {
         anchors.bottomMargin: parent.height * 0.09
         width: 340 * content.s
         height: 50 * content.s
-        radius: height / 2
+        radius: 8 * content.s
         color: Theme.fieldBg
         border.width: 1
         border.color: Theme.fieldBorder
         opacity: content.isMain ? (content.authenticating ? 0.6 : 1) : 0
+
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowColor: Qt.rgba(0, 0, 0, 0.35)
+            shadowBlur: 0.8
+            shadowVerticalOffset: 4 * content.s
+        }
 
         transform: Translate { id: capsuleShift }
 

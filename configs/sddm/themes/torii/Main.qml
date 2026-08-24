@@ -546,10 +546,10 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             width: 360 * root.s
             height: 55 * root.s
-            radius: height / 2
-            color: Qt.rgba(18 / 255, 11 / 255, 8 / 255, 0.5)
+            radius: 8 * root.s
+            color: Qt.rgba(1, 1, 1, 0.08)
             border.width: 1
-            border.color: root.hairStrong
+            border.color: Qt.rgba(1, 1, 1, 0.20)
 
             property real shakeOffset: 0
             transform: Translate { x: pill.shakeOffset }

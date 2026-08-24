@@ -25,8 +25,8 @@ Singleton {
 
     readonly property string font:  "SF Pro Display"
 
-    readonly property color fieldBg: dyn ? Qt.alpha(bright, 0.10) : Qt.rgba(1, 0.96, 0.94, 0.10)
-    readonly property color fieldBorder: dyn ? Qt.alpha(cream, 0.30) : Qt.rgba(230 / 255, 214 / 255, 203 / 255, 0.30)
+    readonly property color fieldBg: dyn ? Qt.alpha(bright, 0.08) : Qt.rgba(1, 1, 1, 0.08)
+    readonly property color fieldBorder: dyn ? Qt.alpha(bright, 0.20) : Qt.rgba(1, 1, 1, 0.20)
     readonly property color trackBg: dyn ? Qt.alpha(cream, 0.16) : Qt.rgba(240 / 255, 224 / 255, 215 / 255, 0.16)
 
     property color error:  dyn ? Dyn.primary : "#e0563b"
