@@ -43,20 +43,20 @@ Singleton {
     property color dim:      dyn ? Dyn.dim : "#8a7d74"
     Behavior on dim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color cardTop:  dyn ? Dyn.surfaceContainerHigh : "#2e231b"
+    property color cardTop:  dyn ? Qt.alpha(Dyn.surfaceContainerHigh, 0.40) : Qt.rgba(1, 1, 1, 0.08)
     Behavior on cardTop { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color cardBot:  dyn ? Dyn.surfaceContainerLow : "#221813"
+    property color cardBot:  dyn ? Qt.alpha(Dyn.surfaceContainerLow, 0.50) : Qt.rgba(1, 1, 1, 0.08)
     Behavior on cardBot { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color activeBorder: dyn ? Qt.alpha(Dyn.primary, 0.40) : Qt.alpha(vermLit, 0.40)
     Behavior on activeBorder { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color border:   dyn ? Qt.alpha(Dyn.outlineVariant, 0.30) : Qt.alpha("#3a2a22", 0.30)
+    property color border:   dyn ? Qt.alpha(bright, 0.20) : Qt.rgba(1, 1, 1, 0.20)
     Behavior on border { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color shadow:     Qt.rgba(0, 0, 0, 0.30)
-    property color tileBg:   dyn ? Dyn.surface : "#211711"
+    property color shadow:     Qt.rgba(0, 0, 0, 0.35)
+    property color tileBg:   dyn ? Qt.alpha(Dyn.surface, 0.40) : Qt.rgba(1, 1, 1, 0.05)
     Behavior on tileBg { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color subtle:   dyn ? Dyn.subtle : "#b9a99e"
@@ -105,10 +105,10 @@ Singleton {
 
     property color ghost:     dyn ? Dyn.surfaceContainerHighest : "#594636"
     Behavior on ghost { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
-    readonly property color frameBg:      Qt.alpha(cream, 0.055)
-    readonly property color frameBorder:  Qt.alpha(cream, 0.10)
+    readonly property color frameBg:      dyn ? Qt.alpha(bright, 0.08) : Qt.rgba(1, 1, 1, 0.08)
+    readonly property color frameBorder:  dyn ? Qt.alpha(bright, 0.20) : Qt.rgba(1, 1, 1, 0.20)
     readonly property color creamMenu:     Qt.alpha(cream, 0.82)
-    readonly property real shadowOpacity: 0.30
+    readonly property real shadowOpacity: 0.35
     /**
      * Snapshot of the system families, not a binding: Qt.fontFamilies() is not
      * notifiable, so a font dropped onto the pill re-registers through

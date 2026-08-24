@@ -716,8 +716,8 @@ Item {
 
         gradient: Gradient {
             orientation: Gradient.Horizontal
-            GradientStop { position: 0.0; color: Theme.dyn ? Dyn.primary : Theme.vermLit }
-            GradientStop { position: 1.0; color: Theme.dyn ? Dyn.outlineVariant : Theme.border }
+            GradientStop { position: 0.0; color: Theme.dyn ? Qt.alpha(Dyn.primary, 0.40) : Theme.border }
+            GradientStop { position: 1.0; color: Theme.border }
         }
 
         Rectangle {
