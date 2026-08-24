@@ -41,12 +41,17 @@ hl.config({
             scale        = 1.0,
         },
         blur = {
-            enabled           = false,
-            size              = 5,
-            passes            = 2,
+            enabled           = true,
+            size              = 8,
+            passes            = 3,
             vibrancy          = 0.25,
             noise             = 0.01,
-            new_optimizations = false,
+            new_optimizations = true,
         },
     },
 })
+
+hl.layer_rule({ name = "pill-blur", match = { namespace = "pill" }, blur = true, ignore_alpha = 0.01 })
+hl.layer_rule({ name = "quickshell-blur", match = { namespace = "quickshell" }, blur = true, ignore_alpha = 0.01 })
+hl.layer_rule({ name = "launcher-blur", match = { namespace = "launcher" }, blur = true, ignore_alpha = 0.01 })
+hl.layer_rule({ name = "lock-blur", match = { namespace = "lock" }, blur = true, ignore_alpha = 0.01 })
