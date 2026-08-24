@@ -134,10 +134,6 @@ def run_matugen_hex(source_hex):
     return json.loads(out.stdout)
 
 
-def ensure_accent_contrast(hex_color, white_amount=0.45):
-    """Lift accent color towards luminous white for a bright radiant tone."""
-    return blend(hex_color, "#ffffff", white_amount)
-
 
 def build_pill(colors):
     """Map Material You tokens to the pill JSON consumed by Dyn.qml.
@@ -160,7 +156,7 @@ def build_pill(colors):
     }
 
     # Accent tokens
-    pill["primary"] = ensure_accent_contrast(d("primary"), white_amount=0.45)
+    pill["primary"] = d("primary")
     pill["primary_container"] = d("primary_container")
     pill["outline"] = d("outline")
 
