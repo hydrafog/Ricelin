@@ -293,10 +293,10 @@ ShellRoot {
             Region {
                 id: pillRegion
                 readonly property real baseW: Math.max(pill.width, pill.targetW)
-                x: pill.x + (pill.width - baseW) / 2 - 32 * pill.s
+                x: pill.x + (pill.width - baseW) / 2 - 18 * pill.s
                 y: 0
-                width: baseW + pill.inputPadRight + 64 * pill.s
-                height: Math.max(pill.height, pill.targetH) + overlay.topGap + 24 * pill.s
+                width: baseW + pill.inputPadRight + 36 * pill.s
+                height: Math.max(pill.height, pill.targetH) + overlay.topGap + (overlay.surfaceOpen ? 12 * pill.s : 1 * pill.s)
             }
             Region {
                 id: fullRegion
