@@ -10,8 +10,6 @@ Item {
     property real s: 1
     /** Passive pill height; the workspace flash borrows it so switching never morphs taller. */
     property real restHeight: 38 * s
-    /** Hover pill width; the workspace flash never goes narrower than this. */
-    property real hoverWidth: 0
     property string screenName: ""
     property bool suppressed: false
     property bool expanded: false
@@ -52,7 +50,7 @@ Item {
     readonly property bool muted: sink && sink.audio ? sink.audio.muted : false
     readonly property real volume: sink && sink.audio ? Math.max(0, Math.min(1, sink.audio.volume)) : 0
 
-    readonly property real desiredW: kind === "workspace" ? Math.max(hoverWidth, 120 * s, wsIndicator.implicitWidth + 40 * s)
+    readonly property real desiredW: kind === "workspace" ? Math.max(120 * s, wsIndicator.implicitWidth + 36 * s)
         : (kind === "track" ? 344 * s : (kind === "record" ? 256 * s : 248 * s))
     readonly property real desiredH: kind === "track" ? 64 * s
         : (kind === "workspace" ? restHeight : 44 * s)
