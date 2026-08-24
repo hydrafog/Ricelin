@@ -1,21 +1,22 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import "Singletons"
 
 /**
- * Workspace switch indicator for the workspace OSD flash: one rounded segment
- * per workspace on this monitor, each carrying the app icons of its opened
- * windows (capped at three, with a +n chip past that) instead of bare dots.
- * The active segment lights up vermillion; empty ones shrink to a lone marker
- * dot. Clicking a segment focuses the workspace, clicking an icon focuses that
- * window, both via the Hyprland-lua dispatcher.
+ * Workspace switch indicator for the workspace OSD flash: a fixed run of ten
+ * equal cells (workspaces 1-10, always present whether populated or not), each
+ * cell a miniature grid holding the app icons of its opened windows in both
+ * rows and columns. Past six windows the last grid slot becomes a +n chip.
+ * The active cell lights up vermillion; empty ones carry a lone marker dot.
+ * Clicking a cell focuses the workspace, clicking an icon focuses that window,
+ * both via the Hyprland-lua dispatcher.
  *
- * The segment range unions this monitor's workspace rules ([[Workspacerules]])
- * with the workspaces Hyprland currently has on it, matching the old dot strip,
- * so rule-driven setups always show every assigned segment.
+ * Window icons reflect this monitor only, so a rule-driven multi-screen setup
+ * still reads true per pill.
  */
 Item {
     id: root
@@ -23,31 +24,23 @@ Item {
     property string screenName: ""
     property real s: 1
 
+    /** Grid shape per cell. */
+    property int maxCols: 3
+    property int maxRows: 2
+    property real iconSize: 14 * s
+    property real gap: 3 * s
+    property real padX: 6 * s
+    property real padY: 5 * s
+
+    readonly property int capacity: maxCols * maxRows
+    readonly property real cellW: maxCols * iconSize + (maxCols - 1) * gap + 2 * padX
+    readonly property real cellH: maxRows * iconSize + (maxRows - 1) * gap + 2 * padY
+    readonly property int wsCount: 10
+
     readonly property var range: {
         var out = [];
-        var seen = ({});
-        var ruled = Workspacerules.byMonitor[screenName];
-        if (ruled && ruled.length) {
-            for (var r = 0; r < ruled.length; r++) {
-                if (!seen[ruled[r]]) {
-                    seen[ruled[r]] = true;
-                    out.push(ruled[r]);
-                }
-            }
-        }
-
-        var wss = Hyprland.workspaces.values;
-        for (var i = 0; i < wss.length; i++) {
-            var w = wss[i];
-            if (w.id >= 1 && w.monitor && w.monitor.name === screenName && !seen[w.id]) {
-                seen[w.id] = true;
-                out.push(w.id);
-            }
-        }
-        var a = parseInt(activeName);
-        if (a >= 1 && !seen[a])
-            out.push(a);
-        out.sort(function (x, y) { return x - y; });
+        for (var i = 1; i <= wsCount; i++)
+            out.push(i);
         return out;
     }
 
@@ -103,17 +96,14 @@ Item {
         Hyprland.dispatch('hl.dsp.focus({ window = "address:' + addr + '" })');
     }
 
-    property real segH: 30 * s
-    property int maxIcons: 3
-
     implicitWidth: row.implicitWidth
-    implicitHeight: segH
+    implicitHeight: cellH
 
     Row {
         id: row
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 6 * root.s
+        spacing: 5 * root.s
 
         Repeater {
             model: root.range
@@ -127,13 +117,16 @@ Item {
                 readonly property bool isActive: root.activeName === wsName
                 readonly property var wins: root.winsByWs[wsName] || []
                 readonly property bool hasWins: wins.length > 0
-                readonly property int shown: Math.min(wins.length, root.maxIcons)
+                readonly property int shown: Math.min(wins.length, root.capacity)
                 readonly property int overflow: wins.length - shown
 
-                radius: height / 2
-                height: root.segH
-                width: hasWins ? iconsRow.implicitWidth + 18 * root.s : 26 * root.s
-                Behavior on width { NumberAnimation { duration: Motion.fast; easing.type: Motion.easeStandard } }
+                /** Grid slots to render: all shown, minus one swapped for +n. */
+                readonly property int slots: shown === 0 ? 0
+                    : (overflow > 0 ? root.capacity - 1 : shown)
+
+                width: root.cellW
+                height: root.cellH
+                radius: Motion.rSmall * root.s
 
                 color: isActive ? Qt.alpha(Theme.vermLit, 0.12) : Theme.tileBg
                 border.width: 1
@@ -145,7 +138,6 @@ Item {
                 MouseArea {
                     id: area
                     anchors.fill: parent
-                    anchors.margins: -4 * root.s
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: Hyprland.dispatch('hl.dsp.focus({workspace="' + seg.wsName + '"})')
@@ -163,44 +155,59 @@ Item {
                     Behavior on opacity { NumberAnimation { duration: Motion.fast } }
                 }
 
-                Row {
-                    id: iconsRow
+                GridLayout {
+                    id: grid
                     anchors.centerIn: parent
-                    spacing: 5 * root.s
+                    columns: root.maxCols
+                    columnSpacing: root.gap
+                    rowSpacing: root.gap
                     visible: seg.hasWins
 
                     Repeater {
-                        model: seg.shown
+                        model: seg.slots
 
                         delegate: Item {
                             id: win
 
                             required property int index
 
-                            width: 17 * root.s
-                            height: 17 * root.s
-                            anchors.verticalCenter: parent ? parent.verticalCenter : undefined
+                            readonly property bool isPlus: seg.overflow > 0
+                                && win.index === root.capacity - 1
+                            readonly property var tl: isPlus ? null : seg.wins[win.index]
+                            readonly property string iconSrc: isPlus ? "" : root.iconFor(win.tl)
 
-                            readonly property var tl: seg.wins[win.index]
-                            readonly property string iconSrc: root.iconFor(win.tl)
+                            Layout.preferredWidth: root.iconSize
+                            Layout.preferredHeight: root.iconSize
 
                             Image {
                                 anchors.fill: parent
-                                sourceSize.width: Math.round(34 * root.s)
-                                sourceSize.height: Math.round(34 * root.s)
+                                sourceSize.width: Math.round(28 * root.s)
+                                sourceSize.height: Math.round(28 * root.s)
                                 fillMode: Image.PreserveAspectFit
                                 asynchronous: true
                                 smooth: true
+                                visible: !win.isPlus
                                 source: win.iconSrc
-                                opacity: winArea.containsMouse ? 1 : (seg.isActive ? 0.95 : 0.7)
+                                opacity: winArea.containsMouse ? 1 : (seg.isActive ? 0.95 : 0.72)
                                 Behavior on opacity { NumberAnimation { duration: Motion.fast } }
+                            }
+
+                            Text {
+                                anchors.centerIn: parent
+                                visible: win.isPlus
+                                text: "+" + seg.overflow
+                                color: seg.isActive ? Theme.cream : Theme.subtle
+                                font.family: Theme.font
+                                font.pixelSize: 10 * root.s
+                                font.weight: Font.DemiBold
                             }
 
                             MouseArea {
                                 id: winArea
                                 anchors.fill: parent
-                                anchors.margins: -3 * root.s
+                                anchors.margins: -2 * root.s
                                 hoverEnabled: true
+                                enabled: !win.isPlus
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: root.focusWindow(win.tl)
                             }
@@ -212,16 +219,6 @@ Item {
                                 show: winArea.containsMouse
                             }
                         }
-                    }
-
-                    Text {
-                        anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                        visible: seg.overflow > 0
-                        text: "+" + seg.overflow
-                        color: seg.isActive ? Theme.cream : Theme.subtle
-                        font.family: Theme.font
-                        font.pixelSize: 10 * root.s
-                        font.weight: Font.DemiBold
                     }
                 }
             }

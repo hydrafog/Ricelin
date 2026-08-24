@@ -50,7 +50,8 @@ Item {
 
     readonly property real desiredW: kind === "workspace" ? Math.max(120 * s, wsIndicator.implicitWidth + 40 * s)
         : (kind === "track" ? 344 * s : (kind === "record" ? 256 * s : 248 * s))
-    readonly property real desiredH: kind === "track" ? 64 * s : 44 * s
+    readonly property real desiredH: kind === "track" ? 64 * s
+        : (kind === "workspace" ? 58 * s : 44 * s)
 
     /**
      * Active workspace name on this monitor. Any switch (Super+arrow,
