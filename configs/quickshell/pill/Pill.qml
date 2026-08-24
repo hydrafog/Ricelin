@@ -686,8 +686,8 @@ Item {
         anchors.fill: body
         anchors.margins: -3 * pill.s
         radius: body.radius + 3 * pill.s
-        topLeftRadius: body.topLeftRadius > 0 ? (body.topLeftRadius + 3 * pill.s) : 0
-        topRightRadius: body.topRightRadius > 0 ? (body.topRightRadius + 3 * pill.s) : 0
+        topLeftRadius: 0
+        topRightRadius: 0
         bottomLeftRadius: body.bottomLeftRadius > 0 ? (body.bottomLeftRadius + 3 * pill.s) : 0
         bottomRightRadius: body.bottomRightRadius > 0 ? (body.bottomRightRadius + 3 * pill.s) : 0
         color: "transparent"
@@ -709,8 +709,8 @@ Item {
         Behavior on gameFlat { NumberAnimation { duration: Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
 
         radius: pill.morphRadius
-        topLeftRadius: pill.morphRadius * (1 - gameFlat)
-        topRightRadius: pill.morphRadius * (1 - gameFlat)
+        topLeftRadius: 0
+        topRightRadius: 0
         bottomLeftRadius: pill.morphRadius * (1 - gameFlat)
         bottomRightRadius: pill.morphRadius * (1 - gameFlat)
 
@@ -723,8 +723,8 @@ Item {
             anchors.fill: parent
             anchors.margins: 1
             radius: Math.max(0, body.radius - 1)
-            topLeftRadius: Math.max(0, body.topLeftRadius - 1)
-            topRightRadius: Math.max(0, body.topRightRadius - 1)
+            topLeftRadius: 0
+            topRightRadius: 0
             bottomLeftRadius: Math.max(0, body.bottomLeftRadius - 1)
             bottomRightRadius: Math.max(0, body.bottomRightRadius - 1)
             gradient: Gradient {

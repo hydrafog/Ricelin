@@ -31,6 +31,7 @@ Singleton {
     readonly property string faint: adapter.faint
     readonly property string iconDim: adapter.icon_dim
     readonly property string tickRest: adapter.tick_rest
+    readonly property bool isLight: adapter.is_light
 
     FileView {
         id: file
@@ -60,6 +61,7 @@ Singleton {
             property string faint: "#6f635b"
             property string icon_dim: "#cdbfb4"
             property string tick_rest: "#cbb6a3"
+            property bool is_light: false
         }
     }
 }

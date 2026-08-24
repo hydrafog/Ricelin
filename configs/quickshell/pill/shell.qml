@@ -225,7 +225,7 @@ ShellRoot {
             id: reserve
             required property var modelData
             readonly property real s: modelData ? (modelData.height / 1080) * Flags.uiScale : 1
-            readonly property real topGap: 8 * Flags.topGap * s
+            readonly property real topGap: 0
             readonly property real restHeight: 38 * s
 
             /** Trimming the reserved band below the pill's bottom lets windows climb, so App gap sets the pill-to-window air without touching the desktop gaps_out. */
@@ -254,7 +254,7 @@ ShellRoot {
             id: overlay
             required property var modelData
             readonly property real s: modelData ? (modelData.height / 1080) * Flags.uiScale : 1
-            readonly property real topGap: 8 * Flags.topGap * s
+            readonly property real topGap: 0
             readonly property string surface: root.openMon === modelData.name ? root.openSurface : ""
             readonly property bool surfaceOpen: surface.length > 0
             readonly property bool modal: pill.authPending ? false : (surfaceOpen || pill.held || pill.quickChoosing)
