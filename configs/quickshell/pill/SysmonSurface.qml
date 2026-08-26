@@ -30,26 +30,7 @@ PillSurface {
 
     onActiveChanged: Sysmon.open = active
 
-    /**
-     * The soul ember rests with the 系 header kanji: the kanji is the lantern,
-     * the bead its flame, hovering just above the glyph with its wick rising into
-     * it. Anchored to the header rather than the dial row so the ember sits in the
-     * same deliberate spot whether three dials or two are shown (the header never
-     * changes with GPU presence). With glyphs off the kanji is hidden, so the
-     * anchor falls back to the SYSTEM label's left edge, vertically centred on the
-     * header, and never floats. Mapped into surface-local space so the host can
-     * offset it by the surface origin.
-     */
-    readonly property point soulPoint: {
-        void root.width;
-        void root.height;
-        if (Flags.showGlyphs)
-            return kanji.mapToItem(root, kanji.width / 2, -3 * root.s);
-        return sysLabel.mapToItem(root, -8 * root.s, sysLabel.height / 2);
-    }
-
-    ameForm: open ? "soul" : "off"
-    amePoint: soulPoint
+    ameForm: "off"
 
     component Dial: Item {
         id: dial
