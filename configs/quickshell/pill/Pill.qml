@@ -1514,45 +1514,6 @@ Item {
                     }
                 }
 
-                MinimizedTray {
-                    id: minimized
-                    anchors.verticalCenter: parent.verticalCenter
-                    s: pill.s
-                    screenName: pill.screenName
-                    enabled: hover.live
-                    visible: count > 0
-                }
-
-                Rectangle {
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: minimized.count > 0
-                    width: 1
-                    height: 14 * pill.s
-                    color: Theme.hair
-                    opacity: 0.7
-                }
-
-                Tray {
-                    anchors.verticalCenter: parent.verticalCenter
-                    s: pill.s
-                    barWindow: pill.barWindow
-                    enabled: hover.live
-                }
-
-            }
-
-            Rectangle {
-                anchors.verticalCenter: parent.verticalCenter
-                width: 1
-                height: 22 * pill.s
-                color: Theme.hair
-            }
-
-            Row {
-                id: sysRow
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 12 * pill.s
-
                 Item {
                     id: dndIcon
                     anchors.verticalCenter: parent.verticalCenter
@@ -1751,6 +1712,45 @@ Item {
                         onContainsMouseChanged: if (containsMouse) pill.soulTarget = "inbox"
                     }
                 }
+
+                MinimizedTray {
+                    id: minimized
+                    anchors.verticalCenter: parent.verticalCenter
+                    s: pill.s
+                    screenName: pill.screenName
+                    enabled: hover.live
+                    visible: count > 0
+                }
+
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: minimized.count > 0
+                    width: 1
+                    height: 14 * pill.s
+                    color: Theme.hair
+                    opacity: 0.7
+                }
+
+                Tray {
+                    anchors.verticalCenter: parent.verticalCenter
+                    s: pill.s
+                    barWindow: pill.barWindow
+                    enabled: hover.live
+                }
+
+            }
+
+            Rectangle {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 1
+                height: 22 * pill.s
+                color: Theme.hair
+            }
+
+            Row {
+                id: sysRow
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 12 * pill.s
 
                 Item {
                     id: mixerIcon
