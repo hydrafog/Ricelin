@@ -168,17 +168,17 @@ PillSurface {
     readonly property var slotW:      [196, 126, 104, 88, 74]
     readonly property var slotH:      [110, 71, 59, 50, 42]
     readonly property var slotCX:     [0, 143, 244, 326, 393]
-    // Brighter neighbours so wallpapers stay legible (was 0.56/0.22, too dim).
-    readonly property var slotBright: [1, 0.88, 0.76, 0.64, 0.52]
-    readonly property var slotSat:    [1, 0.92, 0.84, 0.76, 0.68]
+    // Brighter neighbours so wallpapers stay clearly visible (was 0.56/0.22, far too dim).
+    readonly property var slotBright: [1, 0.94, 0.86, 0.78, 0.70]
+    readonly property var slotSat:    [1, 0.96, 0.92, 0.88, 0.84]
 
     // Parallax drift: image is scaled up and slides opposite to the strip,
-    // so the carousel reads as a window onto a slow backdrop (pibble's
-    // parallaxPx 75). Scale provides spare pixels, parallaxPx controls per-rank
-    // shift. Scale grows with ao and the pan is subtle (18s) so even small
-    // cards stay covered while the focused tiles show clear parallax.
-    readonly property real parallaxPx: 20 * s
-    readonly property real parallaxBaseScale: 1.55
+    // so each wallpaper visibly drifts inside its reserved card as you scroll
+    // past it — the card is the window, the wallpaper is the slowly panning
+    // backdrop (pibble's parallaxPx 75). Scale provides spare pixels, parallaxPx
+    // controls per-rank shift (28s is clearly visible vs 143s card step).
+    readonly property real parallaxPx: 28 * s
+    readonly property real parallaxBaseScale: 1.75
 
     function slotLerp(arr, ao) {
         if (ao >= 4)
@@ -715,6 +715,8 @@ PillSurface {
             readonly property string thumb: modelData.thumb !== undefined ? modelData.thumb : ""
             readonly property bool remote: modelData.image !== undefined
             readonly property string thumbSource: remote ? thumb : ("file://" + thumb)
+            // High-res source for parallax (original file) so the pan reveals real detail
+            readonly property string parallaxSource: remote ? thumb : ("file://" + modelData.path)
 
             /**
              * Live preview gating: only the focused tile plays, and only once
@@ -808,9 +810,10 @@ PillSurface {
                         height: parallaxLayer.imgH
                         x: (parent.width - width) / 2 - parallaxLayer.effOff * root.parallaxPx
                         y: (parent.height - height) / 2
-                        source: tile.ao <= 6 ? tile.thumbSource : ""
-                        sourceSize.width: 640
-                        sourceSize.height: 360
+                        // Use original file for crisp parallax pan; thumb is 512px and has no spare
+                        source: tile.ao <= 6 ? (tile.remote ? tile.thumbSource : tile.parallaxSource) : ""
+                        sourceSize.width: 1024
+                        sourceSize.height: 576
                         fillMode: Image.PreserveAspectCrop
                         asynchronous: true
                         smooth: true
@@ -850,8 +853,8 @@ PillSurface {
                 Rectangle {
                     anchors.fill: parent
                     color: Qt.rgba(0, 0, 0, 1)
-                    // Softer dimming: was 1-bright (0.78 for farthest), now 0.55* for legibility
-                    opacity: (1 - tile.bright) * 0.55
+                    // Softer dimming: was 1-bright (0.78 far), now 0.40* for clear wallpapers
+                    opacity: (1 - tile.bright) * 0.40
                 }
 
                 Rectangle {
