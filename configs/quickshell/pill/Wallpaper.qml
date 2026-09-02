@@ -147,6 +147,15 @@ PillSurface {
         onTriggered: root.previewArmed = true
     }
 
+    Timer {
+        id: lightDarkTimer
+        interval: 180
+        onTriggered: {
+            if (Walls.current && Walls.current.length > 0) Walls.apply(Walls.current);
+            else Walls.refresh();
+        }
+    }
+
     onItemsChanged: if (focusIndex >= itemCount) focusIndex = Math.max(0, itemCount - 1);
 
     Timer {
@@ -559,9 +568,9 @@ PillSurface {
                 var wantLight = ldChip.kind === "light";
                 if (Flags.wallpaperLight !== wantLight) {
                     Flags.wallpaperLight = wantLight;
-                    // Regenerate palette for current wallpaper in new light/dark mode
-                    if (Walls.current && Walls.current.length > 0) Walls.apply(Walls.current);
-                    else Walls.refresh();
+                    if (Flags.paletteMode === "static") Flags.paletteMode = "dynamic";
+                    // FileView write is async — delay apply so wallcolors reads new flag
+                    lightDarkTimer.restart();
                 }
             }
         }
