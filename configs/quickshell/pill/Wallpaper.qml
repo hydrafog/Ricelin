@@ -168,16 +168,17 @@ PillSurface {
     readonly property var slotW:      [196, 126, 104, 88, 74]
     readonly property var slotH:      [110, 71, 59, 50, 42]
     readonly property var slotCX:     [0, 143, 244, 326, 393]
-    readonly property var slotBright: [1, 0.56, 0.42, 0.30, 0.22]
-    readonly property var slotSat:    [1, 0.65, 0.55, 0.45, 0.40]
+    // Brighter neighbours so wallpapers stay legible (was 0.56/0.22, too dim).
+    readonly property var slotBright: [1, 0.88, 0.76, 0.64, 0.52]
+    readonly property var slotSat:    [1, 0.92, 0.84, 0.76, 0.68]
 
-    // Parallax drift: each thumb's image is wider than its card and slides
-    // opposite to the strip, so the carousel reads as a window onto a slow
-    // backdrop (see pibble's parallaxPx). ParallaxPx controls per-rank shift,
-    // parallaxExtra is the total spare width needed to cover max offset
-    // (5* ensures coverage for ao<=5, the visibility cutoff).
-    readonly property real parallaxPx: 28 * s
-    readonly property real parallaxExtra: 5 * parallaxPx + 20 * s
+    // Parallax drift: image is scaled up and slides opposite to the strip,
+    // so the carousel reads as a window onto a slow backdrop (pibble's
+    // parallaxPx 75). Scale provides spare pixels, parallaxPx controls per-rank
+    // shift. Scale grows with ao so even the smallest far cards have enough
+    // spare to pan without showing the tile background.
+    readonly property real parallaxPx: 18 * s
+    readonly property real parallaxBaseScale: 1.35
 
     function slotLerp(arr, ao) {
         if (ao >= 4)
@@ -709,29 +710,44 @@ PillSurface {
                     shadowVerticalOffset: 4 * root.s
                 }
 
-                // Parallax media layer: wider than the card and offset by
-                // -off*parallaxPx so the strip reads as a window onto a slow
-                // backdrop (pibble-style parallax).
+                // Parallax media layer: image is scaled up to provide spare
+                // pixels, then panned opposite to the strip (pibble-style:
+                // x = center - rank*parallaxPx). The pan is clamped and faded
+                // with ao so even the smallest far cards have enough spare and
+                // the motion reads as the wallpaper sliding under the carousel,
+                // not the card sliding over the wallpaper.
                 Item {
                     id: parallaxLayer
-                    width: parent.width + root.parallaxExtra * 2
-                    height: parent.height
-                    x: -root.parallaxExtra - tile.off * root.parallaxPx
+                    anchors.fill: parent
                     clip: false
+
+                    // Parallax only for the focused neighbourhood (ao<2.5); far
+                    // cards are too small/dim for the motion to matter and would
+                    // need excessive zoom to stay covered.
+                    readonly property real effOff: tile.ao > 2.5 ? 0 : Math.max(-2.2, Math.min(2.2, tile.off))
+                    readonly property real dynScale: root.parallaxBaseScale + tile.ao * 0.12
+                    readonly property real imgW: parent.width * dynScale
+                    readonly property real imgH: parent.height * dynScale
 
                     Image {
                         id: thumbImage
-                        anchors.fill: parent
+                        width: parallaxLayer.imgW
+                        height: parallaxLayer.imgH
+                        x: (parent.width - width) / 2 - parallaxLayer.effOff * root.parallaxPx
+                        y: (parent.height - height) / 2
                         source: tile.ao <= 6 ? tile.thumbSource : ""
-                        sourceSize.width: 512
-                        sourceSize.height: 220
+                        sourceSize.width: 640
+                        sourceSize.height: 360
                         fillMode: Image.PreserveAspectCrop
                         asynchronous: true
                         smooth: true
                     }
 
                     AnimatedImage {
-                        anchors.fill: parent
+                        width: parallaxLayer.imgW
+                        height: parallaxLayer.imgH
+                        x: (parent.width - width) / 2 - parallaxLayer.effOff * root.parallaxPx
+                        y: (parent.height - height) / 2
                         source: tile.showPreview && tile.isGif ? (tile.remote ? tile.modelData.image : "file://" + tile.modelData.path) : ""
                         playing: source != ""
                         visible: status === AnimatedImage.Ready
@@ -741,7 +757,10 @@ PillSurface {
                     }
 
                     Loader {
-                        anchors.fill: parent
+                        width: parallaxLayer.imgW
+                        height: parallaxLayer.imgH
+                        x: (parent.width - width) / 2 - parallaxLayer.effOff * root.parallaxPx
+                        y: (parent.height - height) / 2
                         active: tile.showPreview && tile.videoSource !== ""
 
                         source: "VideoPreview.qml"
@@ -758,7 +777,8 @@ PillSurface {
                 Rectangle {
                     anchors.fill: parent
                     color: Qt.rgba(0, 0, 0, 1)
-                    opacity: 1 - tile.bright
+                    // Softer dimming: was 1-bright (0.78 for farthest), now 0.55* for legibility
+                    opacity: (1 - tile.bright) * 0.55
                 }
 
                 Rectangle {
