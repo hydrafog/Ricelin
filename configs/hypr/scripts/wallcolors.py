@@ -75,7 +75,7 @@ def tint(hue, sat, light):
     return "#%02x%02x%02x" % (round(r * 255), round(g * 255), round(b * 255))
 
 
-def run_matugen_image(wallpaper):
+def run_matugen_image(wallpaper, mode="dark"):
     """Run matugen with native image analysis — single subprocess, ~430ms."""
     out = subprocess.run(
         [
@@ -83,7 +83,7 @@ def run_matugen_image(wallpaper):
             "image",
             wallpaper,
             "-m",
-            "dark",
+            mode,
             "-t",
             "scheme-vibrant",
             "--contrast",
@@ -107,7 +107,7 @@ def run_matugen_image(wallpaper):
     return json.loads(out.stdout)
 
 
-def run_matugen_hex(source_hex):
+def run_matugen_hex(source_hex, mode="dark"):
     """Run matugen from a source hex colour (--hue manual mode)."""
     out = subprocess.run(
         [
@@ -116,7 +116,7 @@ def run_matugen_hex(source_hex):
             "hex",
             source_hex,
             "-m",
-            "dark",
+            mode,
             "-t",
             "scheme-vibrant",
             "--contrast",
@@ -135,7 +135,27 @@ def run_matugen_hex(source_hex):
 
 
 
-def build_pill(colors):
+def _resolve_mode():
+    """Resolve light/dark from flags.json (wallpaperLight) or default dark."""
+    # Explicit CLI override (second arg for image mode) is handled in main(),
+    # but also honour the persisted flag so wallpaper.sh needs no change.
+    try:
+        flags_path = Path.home() / ".local" / "state" / "ricelin" / "flags.json"
+        if flags_path.is_file():
+            data = json.loads(flags_path.read_text())
+            if data.get("wallpaperLight") is True:
+                return "light"
+            if data.get("wallpaperLight") is False:
+                return "dark"
+            # legacy alias
+            if data.get("isLight") is True:
+                return "light"
+    except Exception:
+        pass
+    return "dark"
+
+
+def build_pill(colors, mode="dark"):
     """Map Material You tokens to the pill JSON consumed by Dyn.qml.
 
     Surface tiers and accent tokens map directly. The 7-step text ramp
@@ -143,7 +163,8 @@ def build_pill(colors):
     down through on_surface_variant and outline_variant (faintest).
     Always ensures clean, luminous white/cream font tones.
     """
-    d = lambda key: colors[key]["dark"]
+    # mode selects which matugen variant to read ("dark" or "light")
+    d = lambda key: colors[key][mode]
 
     # Surface containers — direct from Material You
     pill = {
@@ -177,6 +198,7 @@ def build_pill(colors):
     pill["faint"] = blend(on_surf, "#ffffff", 0.45)
     pill["icon_dim"] = blend(on_surf, "#ffffff", 0.75)
     pill["tick_rest"] = blend(on_surf, "#ffffff", 0.70)
+    pill["is_light"] = (mode == "light")
 
     return pill
 
@@ -704,7 +726,7 @@ def main():
         light = 0.45 if mode == "dark" else 0.55
         source_hex = tint(hue, sat, light)
         try:
-            m_res = run_matugen_hex(source_hex)
+            m_res = run_matugen_hex(source_hex, mode)
         except (OSError, ValueError, subprocess.SubprocessError):
             return 0
     else:
@@ -712,8 +734,13 @@ def main():
         wallpaper = sys.argv[1]
         if not Path(wallpaper).is_file():
             return 0
+        # Mode can be passed as second arg (explicit), otherwise read from flags.json
+        if len(sys.argv) >= 3 and sys.argv[2] in ("light", "dark"):
+            mode = sys.argv[2]
+        else:
+            mode = _resolve_mode()
         try:
-            m_res = run_matugen_image(wallpaper)
+            m_res = run_matugen_image(wallpaper, mode)
         except (OSError, ValueError, subprocess.SubprocessError):
             return 0
 
@@ -723,8 +750,8 @@ def main():
     if not colors:
         return 0
 
-    # Build and write the pill JSON
-    pill = build_pill(colors)
+    # Build and write the pill JSON (honours light/dark)
+    pill = build_pill(colors, mode)
     (CACHE / "colors.json").write_text(json.dumps(pill, indent=2) + "\n")
 
     # Render fastfetch config
@@ -732,12 +759,12 @@ def main():
 
     # Process base16 terminal palette
     try:
-        b = {k: v["dark"] for k, v in m_res["base16"].items()}
+        b = {k: v[mode] for k, v in m_res["base16"].items()}
         # Check if the generated base16 is invalid/fallback (e.g. base0b or base0d is black or default)
         is_invalid = b.get("base00") == "#000000" and b.get("base05") == "#000000" or b.get("base0b") == "#000000"
         if is_invalid:
             # Fallback mapping from Material Design 3 colors, same as module.nix
-            d = lambda key, fallback: colors.get(key, {}).get("dark", fallback)
+            d = lambda key, fallback: colors.get(key, {}).get(mode, fallback)
             b = {
                 "base00": d("surface", "#111318"),
                 "base01": d("surface_container_low", "#1a1b20"),
@@ -756,7 +783,7 @@ def main():
                 "base0e": d("tertiary", "#debcdf"),
                 "base0f": d("outline", "#8e9099"),
             }
-        on_bg = colors["on_background"]["dark"]
+        on_bg = colors["on_background"][mode]
         adjust_gray_ramp(b, on_bg)
     except KeyError:
         return 0

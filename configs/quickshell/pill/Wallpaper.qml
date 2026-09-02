@@ -175,10 +175,10 @@ PillSurface {
     // Parallax drift: image is scaled up and slides opposite to the strip,
     // so the carousel reads as a window onto a slow backdrop (pibble's
     // parallaxPx 75). Scale provides spare pixels, parallaxPx controls per-rank
-    // shift. Scale grows with ao so even the smallest far cards have enough
-    // spare to pan without showing the tile background.
-    readonly property real parallaxPx: 18 * s
-    readonly property real parallaxBaseScale: 1.35
+    // shift. Scale grows with ao and the pan is subtle (18s) so even small
+    // cards stay covered while the focused tiles show clear parallax.
+    readonly property real parallaxPx: 20 * s
+    readonly property real parallaxBaseScale: 1.55
 
     function slotLerp(arr, ao) {
         if (ao >= 4)
@@ -438,7 +438,7 @@ PillSurface {
         anchors.left: parent.left
         anchors.leftMargin: 20 * root.s
         anchors.right: parent.right
-        anchors.rightMargin: filterRow.width + 30 * root.s
+        anchors.rightMargin: filterRow.width + lightDarkRow.width + 38 * root.s
         s: root.s
         kanji: "探"
         placeholder: "Search wallpapers"
@@ -534,6 +534,78 @@ PillSurface {
         }
     }
 
+    component LightDarkChip: Item {
+        id: ldChip
+        property string kind: ""
+        property string label: ""
+        width: ldText.implicitWidth + 17 * root.s
+        height: parent ? parent.height : 0
+        Text {
+            id: ldText
+            anchors.centerIn: parent
+            text: ldChip.label
+            color: (Flags.wallpaperLight ? "light" : "dark") === ldChip.kind ? Theme.cream : Theme.faint
+            font.family: Theme.font
+            font.pixelSize: 9.5 * root.s
+            font.weight: Font.DemiBold
+            font.letterSpacing: 0.4 * root.s
+            Behavior on color { ColorAnimation { duration: Motion.fast } }
+        }
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                var wantLight = ldChip.kind === "light";
+                if (Flags.wallpaperLight !== wantLight) {
+                    Flags.wallpaperLight = wantLight;
+                    // Regenerate palette for current wallpaper in new light/dark mode
+                    if (Walls.current && Walls.current.length > 0) Walls.apply(Walls.current);
+                    else Walls.refresh();
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        id: lightDarkRow
+        anchors.top: parent.top
+        anchors.topMargin: 9 * root.s
+        anchors.right: filterRow.left
+        anchors.rightMargin: 8 * root.s
+        z: 40
+        width: lightDarkSegRow.implicitWidth + 6 * root.s
+        height: 22 * root.s
+        radius: height / 2
+        color: Theme.frameBg
+        border.width: 1
+        border.color: Theme.hairSoft
+
+        readonly property Item currentChip: Flags.wallpaperLight ? chipLight : chipDark
+
+        Rectangle {
+            anchors.verticalCenter: parent.verticalCenter
+            height: parent.height - 4 * root.s
+            radius: height / 2
+            x: lightDarkSegRow.x + lightDarkRow.currentChip.x + 2 * root.s
+            width: lightDarkRow.currentChip.width - 4 * root.s
+            color: Qt.alpha(Theme.onGlow, 0.18)
+            border.width: 1
+            border.color: Qt.alpha(Theme.onGlow, 0.45)
+            Behavior on x { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
+            Behavior on width { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
+        }
+
+        Row {
+            id: lightDarkSegRow
+            anchors.left: parent.left
+            anchors.leftMargin: 3 * root.s
+            height: parent.height
+
+            LightDarkChip { id: chipDark; kind: "dark"; label: "dark" }
+            LightDarkChip { id: chipLight; kind: "light"; label: "light" }
+        }
+    }
+
     /**
      * Current wallpaper folder as a quiet header caption. A click swaps the
      * label for an inline path edit seeded from flags.json: Return commits the
@@ -546,7 +618,7 @@ PillSurface {
         anchors.topMargin: 6 * root.s
         anchors.left: parent.left
         anchors.leftMargin: 20 * root.s
-        anchors.right: filterRow.left
+        anchors.right: lightDarkRow.left
         anchors.rightMargin: 12 * root.s
         height: 30 * root.s
         visible: !root.searching
@@ -712,20 +784,21 @@ PillSurface {
 
                 // Parallax media layer: image is scaled up to provide spare
                 // pixels, then panned opposite to the strip (pibble-style:
-                // x = center - rank*parallaxPx). The pan is clamped and faded
-                // with ao so even the smallest far cards have enough spare and
-                // the motion reads as the wallpaper sliding under the carousel,
-                // not the card sliding over the wallpaper.
+                // x = center - rank*parallaxPx). Each card's image keeps
+                // sliding as you scroll past it (off drives the pan), so the
+                // wallpaper drifts inside its reserved space, not just the
+                // strip.
                 Item {
                     id: parallaxLayer
                     anchors.fill: parent
                     clip: false
 
-                    // Parallax only for the focused neighbourhood (ao<2.5); far
-                    // cards are too small/dim for the motion to matter and would
-                    // need excessive zoom to stay covered.
-                    readonly property real effOff: tile.ao > 2.5 ? 0 : Math.max(-2.2, Math.min(2.2, tile.off))
-                    readonly property real dynScale: root.parallaxBaseScale + tile.ao * 0.12
+                    // Continuous parallax for the neighbourhood; far cards
+                    // (ao>3) pan less to stay covered without extreme zoom.
+                    readonly property real clampedOff: Math.max(-3.2, Math.min(3.2, tile.off))
+                    readonly property real parallaxFactor: tile.ao > 2.2 ? (1 - (tile.ao - 2.2) * 0.32) : 1.0
+                    readonly property real effOff: clampedOff * Math.max(0.35, parallaxFactor)
+                    readonly property real dynScale: root.parallaxBaseScale + tile.ao * 0.14
                     readonly property real imgW: parent.width * dynScale
                     readonly property real imgH: parent.height * dynScale
 

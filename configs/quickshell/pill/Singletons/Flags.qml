@@ -26,6 +26,7 @@ Singleton {
     property alias manualHue: adapter.manualHue
     property alias manualDark: adapter.manualDark
     property alias manualSat: adapter.manualSat
+    property alias wallpaperLight: adapter.wallpaperLight
     property alias uiFont: adapter.uiFont
     property alias pillOpacity: adapter.pillOpacity
     property alias pillBlur: adapter.pillBlur
@@ -85,6 +86,7 @@ Singleton {
             property int manualHue: 30
             property bool manualDark: true
             property real manualSat: 0.5
+            property bool wallpaperLight: false
             property string uiFont: ""
             property real pillOpacity: 1.0
             property bool pillBlur: false
