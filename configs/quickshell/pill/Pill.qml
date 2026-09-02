@@ -706,9 +706,9 @@ Item {
         layer.samples: 8
         layer.effect: MultiEffect {
             shadowEnabled: true
-            shadowColor: Qt.rgba(0, 0, 0, 0.05)
-            shadowBlur: 3.2
-            shadowVerticalOffset: 1 * pill.s
+            shadowColor: Qt.rgba(0, 0, 0, 0.035)
+            shadowBlur: 4.2
+            shadowVerticalOffset: 0.8 * pill.s
             shadowHorizontalOffset: 0
             autoPaddingEnabled: true
         }

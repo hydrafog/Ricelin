@@ -178,9 +178,9 @@ PillSurface {
     readonly property var slotH:      [110, 71, 59, 50, 42]
     readonly property var slotCX:     [0, 143, 244, 326, 393]
     // Minimal hiding: neighbours stay almost fully bright/saturated, only
-    // scaled down to convey depth. Was 0.56/0.22 far too dim.
-    readonly property var slotBright: [1, 0.98, 0.95, 0.92, 0.88]
-    readonly property var slotSat:    [1, 0.98, 0.96, 0.94, 0.92]
+    // scaled down to convey depth — hide absolute minimum.
+    readonly property var slotBright: [1, 0.99, 0.97, 0.95, 0.92]
+    readonly property var slotSat:    [1, 0.99, 0.97, 0.95, 0.93]
 
     // Parallax drift: image is scaled up just enough to provide spare pixels,
     // then slides opposite to the strip — each wallpaper drifts inside its
@@ -799,9 +799,9 @@ PillSurface {
                 layer.effect: MultiEffect {
                     saturation: tile.sat - 1
                     shadowEnabled: tile.focused
-                    shadowColor: Qt.rgba(0, 0, 0, Theme.shadowOpacity * 0.22)
-                    shadowBlur: 2.8
-                    shadowVerticalOffset: 1.5 * root.s
+                    shadowColor: Qt.rgba(0, 0, 0, Theme.shadowOpacity * 0.12)
+                    shadowBlur: 3.8
+                    shadowVerticalOffset: 0.8 * root.s
                     shadowHorizontalOffset: 0
                 }
 
@@ -875,7 +875,7 @@ PillSurface {
                     anchors.fill: parent
                     color: Qt.rgba(0, 0, 0, 1)
                     // Minimal dimming: keep wallpapers almost fully visible
-                    opacity: (1 - tile.bright) * 0.22
+                    opacity: (1 - tile.bright) * 0.14
                 }
 
                 Rectangle {
