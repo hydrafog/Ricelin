@@ -168,17 +168,18 @@ PillSurface {
     readonly property var slotW:      [196, 126, 104, 88, 74]
     readonly property var slotH:      [110, 71, 59, 50, 42]
     readonly property var slotCX:     [0, 143, 244, 326, 393]
-    // Brighter neighbours so wallpapers stay clearly visible (was 0.56/0.22, far too dim).
-    readonly property var slotBright: [1, 0.94, 0.86, 0.78, 0.70]
-    readonly property var slotSat:    [1, 0.96, 0.92, 0.88, 0.84]
+    // Minimal hiding: neighbours stay almost fully bright/saturated, only
+    // scaled down to convey depth. Was 0.56/0.22 far too dim.
+    readonly property var slotBright: [1, 0.98, 0.95, 0.92, 0.88]
+    readonly property var slotSat:    [1, 0.98, 0.96, 0.94, 0.92]
 
-    // Parallax drift: image is scaled up and slides opposite to the strip,
-    // so each wallpaper visibly drifts inside its reserved card as you scroll
-    // past it — the card is the window, the wallpaper is the slowly panning
-    // backdrop (pibble's parallaxPx 75). Scale provides spare pixels, parallaxPx
-    // controls per-rank shift (28s is clearly visible vs 143s card step).
-    readonly property real parallaxPx: 28 * s
-    readonly property real parallaxBaseScale: 1.75
+    // Parallax drift: image is scaled up just enough to provide spare pixels,
+    // then slides opposite to the strip — each wallpaper drifts inside its
+    // reserved card as you scroll past it (pibble's parallaxPx 75). Keep scale
+    // low (1.38) to hide minimum, parallax 18 is still clearly visible vs
+    // 143s card step and stays covered.
+    readonly property real parallaxPx: 18 * s
+    readonly property real parallaxBaseScale: 1.38
 
     function slotLerp(arr, ao) {
         if (ao >= 4)
@@ -754,9 +755,10 @@ PillSurface {
              * the pill's clip.
              */
             readonly property real edgeFade: {
-                var soft = 70 * root.s;
+                var soft = 32 * root.s;
                 var gap = Math.min(x, root.width - (x + width));
-                return Math.max(0, Math.min(1, gap / soft));
+                // Keep at least 0.85 visible even near the edge — hide minimum
+                return Math.max(0.85, Math.min(1, gap / soft));
             }
 
             width: root.slotLerp(root.slotW, ao) * root.s
@@ -765,7 +767,8 @@ PillSurface {
             y: (root.height - height) / 2
             z: 10 - ao
             visible: ao <= 5
-            opacity: edgeFade * (ao <= 4 ? 1 : Math.max(0, 5 - ao))
+            // Only fade the very farthest cards — keep the neighbour strip fully opaque
+            opacity: edgeFade * (ao <= 4.5 ? 1 : Math.max(0.7, 5.5 - ao))
 
             onFocusedChanged: if (!focused) trashHeat.cancel()
 
@@ -795,12 +798,12 @@ PillSurface {
                     anchors.fill: parent
                     clip: false
 
-                    // Continuous parallax for the neighbourhood; far cards
-                    // (ao>3) pan less to stay covered without extreme zoom.
-                    readonly property real clampedOff: Math.max(-3.2, Math.min(3.2, tile.off))
-                    readonly property real parallaxFactor: tile.ao > 2.2 ? (1 - (tile.ao - 2.2) * 0.32) : 1.0
-                    readonly property real effOff: clampedOff * Math.max(0.35, parallaxFactor)
-                    readonly property real dynScale: root.parallaxBaseScale + tile.ao * 0.14
+                    // Continuous parallax; far cards pan less and are scaled more
+                    // so the 1.38 base (minimal crop) still stays covered.
+                    readonly property real clampedOff: Math.max(-3.0, Math.min(3.0, tile.off))
+                    readonly property real parallaxFactor: tile.ao > 2.2 ? (1 - (tile.ao - 2.2) * 0.30) : 1.0
+                    readonly property real effOff: clampedOff * Math.max(0.40, parallaxFactor)
+                    readonly property real dynScale: root.parallaxBaseScale + tile.ao * 0.16
                     readonly property real imgW: parent.width * dynScale
                     readonly property real imgH: parent.height * dynScale
 
@@ -853,8 +856,8 @@ PillSurface {
                 Rectangle {
                     anchors.fill: parent
                     color: Qt.rgba(0, 0, 0, 1)
-                    // Softer dimming: was 1-bright (0.78 far), now 0.40* for clear wallpapers
-                    opacity: (1 - tile.bright) * 0.40
+                    // Minimal dimming: keep wallpapers almost fully visible
+                    opacity: (1 - tile.bright) * 0.22
                 }
 
                 Rectangle {
