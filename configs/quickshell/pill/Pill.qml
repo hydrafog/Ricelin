@@ -703,12 +703,13 @@ Item {
 
         layer.enabled: true
         layer.smooth: true
-        layer.samples: 4
+        layer.samples: 8
         layer.effect: MultiEffect {
             shadowEnabled: true
-            shadowColor: Qt.rgba(0, 0, 0, 0.20)
-            shadowBlur: 0.8
-            shadowVerticalOffset: 3 * pill.s
+            shadowColor: Qt.rgba(0, 0, 0, 0.05)
+            shadowBlur: 3.2
+            shadowVerticalOffset: 1 * pill.s
+            shadowHorizontalOffset: 0
             autoPaddingEnabled: true
         }
 
@@ -716,7 +717,12 @@ Item {
             id: shapeInner
             anchors.fill: parent
             containsMode: Shape.FillContains
-            layer.samples: 4
+            antialiasing: true
+            smooth: true
+            preferredRendererType: Shape.CurveRenderer
+            layer.enabled: true
+            layer.smooth: true
+            layer.samples: 8
 
             ShapePath {
                 strokeColor: "transparent"

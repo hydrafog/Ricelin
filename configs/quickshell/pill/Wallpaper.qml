@@ -514,6 +514,7 @@ PillSurface {
         height: 22 * root.s
         radius: height / 2
         color: Theme.frameBg
+        antialiasing: true
         border.width: 1
         border.color: Theme.hairSoft
 
@@ -523,6 +524,7 @@ PillSurface {
             anchors.verticalCenter: parent.verticalCenter
             height: parent.height - 4 * root.s
             radius: height / 2
+            antialiasing: true
             x: segRow.x + filterRow.currentChip.x + 2 * root.s
             width: filterRow.currentChip.width - 4 * root.s
             color: Qt.alpha(Theme.onGlow, 0.18)
@@ -587,6 +589,7 @@ PillSurface {
         height: 22 * root.s
         radius: height / 2
         color: Theme.frameBg
+        antialiasing: true
         border.width: 1
         border.color: Theme.hairSoft
 
@@ -596,6 +599,7 @@ PillSurface {
             anchors.verticalCenter: parent.verticalCenter
             height: parent.height - 4 * root.s
             radius: height / 2
+            antialiasing: true
             x: lightDarkSegRow.x + lightDarkRow.currentChip.x + 2 * root.s
             width: lightDarkRow.currentChip.width - 4 * root.s
             color: Qt.alpha(Theme.onGlow, 0.18)
@@ -786,14 +790,19 @@ PillSurface {
                 anchors.fill: parent
                 radius: tile.corner
                 color: Theme.tileBg
+                antialiasing: true
+                smooth: true
 
                 layer.enabled: true
+                layer.smooth: true
+                layer.samples: 8
                 layer.effect: MultiEffect {
                     saturation: tile.sat - 1
                     shadowEnabled: tile.focused
-                    shadowColor: Qt.rgba(0, 0, 0, Theme.shadowOpacity)
-                    shadowBlur: 0.7
-                    shadowVerticalOffset: 4 * root.s
+                    shadowColor: Qt.rgba(0, 0, 0, Theme.shadowOpacity * 0.22)
+                    shadowBlur: 2.8
+                    shadowVerticalOffset: 1.5 * root.s
+                    shadowHorizontalOffset: 0
                 }
 
                 // Parallax media layer: image is scaled up to provide spare
@@ -951,6 +960,7 @@ PillSurface {
                 anchors.fill: parent
                 radius: tile.corner
                 color: "transparent"
+                antialiasing: true
                 border.width: 1
                 border.color: {
                     if (tile.remote && dlProc.failed.length && dlProc.failed === tile.modelData.image)
