@@ -174,9 +174,10 @@ PillSurface {
     // Parallax drift: each thumb's image is wider than its card and slides
     // opposite to the strip, so the carousel reads as a window onto a slow
     // backdrop (see pibble's parallaxPx). ParallaxPx controls per-rank shift,
-    // parallaxExtra is the total spare width needed to cover max offset.
+    // parallaxExtra is the total spare width needed to cover max offset
+    // (5* ensures coverage for ao<=5, the visibility cutoff).
     readonly property real parallaxPx: 28 * s
-    readonly property real parallaxExtra: 3 * parallaxPx + 20 * s
+    readonly property real parallaxExtra: 5 * parallaxPx + 20 * s
 
     function slotLerp(arr, ao) {
         if (ao >= 4)
