@@ -632,8 +632,8 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         visible: opacity > 0.01
         opacity: shown ? 1 : 0
-        border.width: 1
-        border.color: Theme.border
+        border.width: 0
+        border.color: "transparent"
         gradient: Gradient {
             GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Theme.cardTop.a * Flags.pillOpacity) }
             GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Theme.cardBot.a * Flags.pillOpacity) }
@@ -719,8 +719,8 @@ Item {
             layer.samples: 4
 
             ShapePath {
-                strokeColor: Theme.border
-                strokeWidth: 1
+                strokeColor: "transparent"
+                strokeWidth: 0
                 capStyle: ShapePath.RoundCap
                 joinStyle: ShapePath.RoundJoin
 

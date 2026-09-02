@@ -171,6 +171,13 @@ PillSurface {
     readonly property var slotBright: [1, 0.56, 0.42, 0.30, 0.22]
     readonly property var slotSat:    [1, 0.65, 0.55, 0.45, 0.40]
 
+    // Parallax drift: each thumb's image is wider than its card and slides
+    // opposite to the strip, so the carousel reads as a window onto a slow
+    // backdrop (see pibble's parallaxPx). ParallaxPx controls per-rank shift,
+    // parallaxExtra is the total spare width needed to cover max offset.
+    readonly property real parallaxPx: 28 * s
+    readonly property real parallaxExtra: 3 * parallaxPx + 20 * s
+
     function slotLerp(arr, ao) {
         if (ao >= 4)
             return arr[4];
@@ -701,39 +708,50 @@ PillSurface {
                     shadowVerticalOffset: 4 * root.s
                 }
 
-                Image {
-                    id: thumbImage
-                    anchors.fill: parent
-                    source: tile.ao <= 6 ? tile.thumbSource : ""
-                    sourceSize.width: 512
-                    sourceSize.height: 220
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true
-                    smooth: true
+                // Parallax media layer: wider than the card and offset by
+                // -off*parallaxPx so the strip reads as a window onto a slow
+                // backdrop (pibble-style parallax).
+                Item {
+                    id: parallaxLayer
+                    width: parent.width + root.parallaxExtra * 2
+                    height: parent.height
+                    x: -root.parallaxExtra - tile.off * root.parallaxPx
+                    clip: false
+
+                    Image {
+                        id: thumbImage
+                        anchors.fill: parent
+                        source: tile.ao <= 6 ? tile.thumbSource : ""
+                        sourceSize.width: 512
+                        sourceSize.height: 220
+                        fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                        smooth: true
+                    }
+
+                    AnimatedImage {
+                        anchors.fill: parent
+                        source: tile.showPreview && tile.isGif ? (tile.remote ? tile.modelData.image : "file://" + tile.modelData.path) : ""
+                        playing: source != ""
+                        visible: status === AnimatedImage.Ready
+                        fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                        cache: false
+                    }
+
+                    Loader {
+                        anchors.fill: parent
+                        active: tile.showPreview && tile.videoSource !== ""
+
+                        source: "VideoPreview.qml"
+                        onLoaded: item.source = tile.videoSource
+                    }
                 }
 
                 Rectangle {
                     anchors.fill: parent
                     color: Theme.tileBg
                     visible: thumbImage.status === Image.Error
-                }
-
-                AnimatedImage {
-                    anchors.fill: parent
-                    source: tile.showPreview && tile.isGif ? (tile.remote ? tile.modelData.image : "file://" + tile.modelData.path) : ""
-                    playing: source != ""
-                    visible: status === AnimatedImage.Ready
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true
-                    cache: false
-                }
-
-                Loader {
-                    anchors.fill: parent
-                    active: tile.showPreview && tile.videoSource !== ""
-
-                    source: "VideoPreview.qml"
-                    onLoaded: item.source = tile.videoSource
                 }
 
                 Rectangle {
