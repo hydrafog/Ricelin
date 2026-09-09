@@ -912,11 +912,24 @@ Item {
 
     readonly property var dropExt: /\.(appimage|deb|rpm|flatpakref|zip|tgz|txz|tbz2|ttf|otf|png|jpe?g|webp)$|\.(pkg\.)?tar\.(gz|xz|bz2|zst)$/i
 
+    function isWebUrl(url) {
+        var s = String(url);
+        return s.indexOf("https://") === 0 || s.indexOf("http://") === 0;
+    }
+
     function droppablePaths(urls) {
         var out = [];
         for (var i = 0; i < urls.length; i++)
-            if (pill.dropExt.test(String(urls[i])))
+            if (!pill.isWebUrl(urls[i]) && pill.dropExt.test(String(urls[i])))
                 out.push(pill.localPath(urls[i]));
+        return out;
+    }
+
+    function droppableUrls(urls) {
+        var out = [];
+        for (var i = 0; i < urls.length; i++)
+            if (pill.isWebUrl(urls[i]))
+                out.push(String(urls[i]));
         return out;
     }
 
@@ -1027,30 +1040,71 @@ Item {
         }
     }
 
+    Process {
+        id: sendUrlProc
+        onExited: (exitCode) => {
+            if (exitCode === 0) {
+                pill.dragStage = "url-done";
+                dropUrlDoneTimer.restart();
+            } else {
+                pill.dragStage = "url-fail";
+                dropBadTimer.restart();
+            }
+        }
+    }
+
+    Timer {
+        id: dropUrlDoneTimer
+        interval: 1200
+        onTriggered: {
+            pill.dragActive = false;
+            pill.dragStage = "";
+        }
+    }
+
     /**
-     * File drops land only on the resting pill; an open surface turns the pill
-     * into a fullscreen modal that swallows the drag before it can start.
-     * app-install.sh routes each drop by type (apps install, fonts land in the
-     * font dir, images become the wallpaper), anything else flashes a rejection.
+     * File and URL drops land only on the resting pill; an open surface turns
+     * the pill into a fullscreen modal that swallows the drag before it can
+     * start. Web URLs (http/https) are forwarded to the phone via
+     * `vortex --open-url`; everything else is routed through app-install.sh.
      */
     DropArea {
         anchors.fill: parent
         enabled: !pill.surfaceOpen && pill.dragStage !== "installing" && pill.dragStage !== "done"
+            && pill.dragStage !== "sending-url" && pill.dragStage !== "url-done"
         keys: ["text/uri-list"]
         onEntered: (drag) => {
             drag.acceptProposedAction();
             pill.dragActive = true;
-            pill.dragStage = pill.droppablePaths(drag.urls).length > 0 ? "hover" : "bad";
-            pill.dragName = pill.dropLabel(drag.urls);
+            var urls = pill.droppableUrls(drag.urls);
+            if (urls.length > 0) {
+                pill.dragStage = "url-hover";
+                pill.dragName = urls[0].replace(/^https?:\/\//, "").split("?")[0]
+                    .split("#")[0].replace(/\/$/, "");
+            } else {
+                pill.dragStage = pill.droppablePaths(drag.urls).length > 0 ? "hover" : "bad";
+                pill.dragName = pill.dropLabel(drag.urls);
+            }
         }
         onExited: {
-            if (pill.dragStage === "hover" || pill.dragStage === "bad") {
+            if (pill.dragStage === "hover" || pill.dragStage === "bad"
+                    || pill.dragStage === "url-hover") {
                 pill.dragActive = false;
                 pill.dragStage = "";
             }
         }
         onDropped: (drop) => {
             drop.acceptProposedAction();
+            var urls = pill.droppableUrls(drop.urls);
+            if (urls.length > 0) {
+                pill.dragActive = true;
+                pill.dragStage = "sending-url";
+                pill.dragName = urls[0].replace(/^https?:\/\//, "").split("?")[0]
+                    .split("#")[0].replace(/\/$/, "");
+                sendUrlProc.command = ["vortex", "--open-url", urls[0]];
+                sendUrlProc.running = true;
+                return;
+            }
             var files = pill.droppablePaths(drop.urls);
             if (files.length === 0) {
                 pill.dragActive = true;
@@ -1141,25 +1195,34 @@ Item {
                     anchors.fill: parent
                     stroke: 2
                     color: dragOverView.accent
-                    name: (pill.dragStage === "bad" || pill.dragStage === "fail") ? "close"
-                        : (pill.dragStage === "installing" ? "reboot"
-                        : (pill.dragStage === "done" ? "check" : "download"))
+                    name: (pill.dragStage === "bad" || pill.dragStage === "fail"
+                            || pill.dragStage === "url-fail") ? "close"
+                        : (pill.dragStage === "installing"
+                            || pill.dragStage === "sending-url" ? "reboot"
+                        : (pill.dragStage === "done"
+                            || pill.dragStage === "url-done" ? "check" : "download"))
 
                     RotationAnimation on rotation {
                         running: pill.dragStage === "installing"
+                            || pill.dragStage === "sending-url"
                         loops: Animation.Infinite
                         from: 0
                         to: 360
                         duration: 900
                     }
-                    onNameChanged: if (pill.dragStage !== "installing") rotation = 0
+                    onNameChanged: if (pill.dragStage !== "installing"
+                        && pill.dragStage !== "sending-url") rotation = 0
                 }
             }
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: pill.dragStage === "bad" ? "Can't install this"
+                text: (pill.dragStage === "bad") ? "Can't install or open this"
                     : (pill.dragStage === "fail" ? "Install failed"
+                    : (pill.dragStage === "url-fail" ? "Couldn't open on phone"
+                    : (pill.dragStage === "sending-url" ? "Opening on phone…"
+                    : (pill.dragStage === "url-done" ? "Opened on phone"
+                    : (pill.dragStage === "url-hover" ? "Drop to open on phone"
                     : (pill.dragStage === "installing" ? ("Installing"
                         + (pill.installPct.length > 0 ? " " + pill.installPct : "")
                         + (pill.installSeconds >= 3 ? "  " + Math.floor(pill.installSeconds / 60) + ":" + String(pill.installSeconds % 60).padStart(2, "0") : ""))
@@ -1168,7 +1231,7 @@ Item {
                         : (!pill.installedApp && pill.installKind === "font" ? "Font installed"
                         : (pill.installAction === "updated" ? "Updated"
                         : (pill.installAction === "reinstalled" ? "Reinstalled" : "Installed")))))
-                    : "Drop to install")))
+                    : "Drop to install"))))))
                 color: Theme.cream
                 font.family: Theme.font
                 font.pixelSize: 13 * pill.s
