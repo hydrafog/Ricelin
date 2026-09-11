@@ -1231,7 +1231,7 @@ Item {
                         : (!pill.installedApp && pill.installKind === "font" ? "Font installed"
                         : (pill.installAction === "updated" ? "Updated"
                         : (pill.installAction === "reinstalled" ? "Reinstalled" : "Installed")))))
-                    : "Drop to install"))))))
+                    : "Drop to install")))))))
                 color: Theme.cream
                 font.family: Theme.font
                 font.pixelSize: 13 * pill.s
