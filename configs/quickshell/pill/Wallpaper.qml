@@ -961,11 +961,11 @@ PillSurface {
                 radius: tile.corner
                 color: "transparent"
                 antialiasing: true
-                border.width: 1
+                border.width: (tile.committing || (tile.remote && dlProc.failed.length && dlProc.failed === tile.modelData.image)) ? 1 : 0
                 border.color: {
                     if (tile.remote && dlProc.failed.length && dlProc.failed === tile.modelData.image)
                         return Theme.vermLit;
-                    return tile.committing ? Theme.vermLit : Theme.border;
+                    return tile.committing ? Theme.vermLit : "transparent";
                 }
                 Behavior on border.color { ColorAnimation { duration: Motion.fast } }
             }
@@ -1056,7 +1056,7 @@ PillSurface {
                             height: Math.max(2, mrect.modelData.h - 1.5 * root.s)
                             radius: 3 * root.s
                             color: monHover.hovered ? Qt.alpha(Theme.vermLit, 0.45) : Qt.alpha(Theme.bright, 0.10)
-                            border.width: 1
+                            border.width: 0
                             border.color: monHover.hovered ? Theme.vermLit : Qt.alpha(Theme.bright, 0.35)
 
                             Behavior on color { ColorAnimation { duration: Motion.fast } }
@@ -1119,7 +1119,7 @@ PillSurface {
             height: keyText.implicitHeight + 6 * root.s
             radius: 5 * root.s
             color: Theme.frameBg
-            border.width: 1
+            border.width: 0
             border.color: Theme.hairSoft
 
             Text {

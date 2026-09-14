@@ -13,7 +13,7 @@ Item {
     property string name: ""
     property color color: "#fff6f0"
     property color duoColor: "#c0442b"
-    property real duoOpacity: 0.28
+    property real duoOpacity: 0.6
     property real stroke: 1.8
 
     readonly property real u: Math.min(width, height) / 24
@@ -42,7 +42,7 @@ Item {
         ShapePath {
             strokeColor: root.g.fill ? "transparent" : Qt.alpha(root.duoColor, root.duoOpacity)
             fillColor: root.g.fill ? Qt.alpha(root.duoColor, root.duoOpacity) : "transparent"
-            strokeWidth: root.g.fill ? 0 : root.stroke + 1.2
+            strokeWidth: root.g.fill ? 0 : root.stroke + 2.2
             capStyle: ShapePath.RoundCap
             joinStyle: ShapePath.RoundJoin
             PathSvg { path: root.g.d }
