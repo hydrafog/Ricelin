@@ -151,7 +151,7 @@ PillSurface {
             height: 16 * root.s
             radius: 5 * root.s
             color: Theme.tileBg
-            border.width: 1
+            border.width: 0
             border.color: Theme.border
 
             Image {
@@ -377,7 +377,7 @@ PillSurface {
         Rectangle {
             width: parent.width
             height: 1
-            color: Theme.hair
+            color: "transparent"
         }
 
         Item {
@@ -446,7 +446,7 @@ PillSurface {
                                     height: 20 * root.s
                                     radius: 6 * root.s
                                     color: Theme.tileBg
-                                    border.width: 1
+                                    border.width: 0
                                     border.color: Theme.border
 
                                     Image {

@@ -195,7 +195,7 @@ PillSurface {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 1
-        color: Theme.hair
+        color: "transparent"
     }
 
     Item {
@@ -314,7 +314,7 @@ PillSurface {
                 radius: 9 * root.s
                 visible: appRow.selected || rowArea.containsMouse
                 color: appRow.selected ? Theme.frameBg : Qt.rgba(0.94, 0.88, 0.84, 0.03)
-                border.width: appRow.selected ? 1 : 0
+                border.width: 0
                 border.color: Theme.frameBorder
             }
 
@@ -355,7 +355,7 @@ PillSurface {
                     width: 22 * root.s
                     height: 22 * root.s
                     radius: 5 * root.s
-                    color: Qt.rgba(1, 1, 1, 0.05)
+                    color: Qt.alpha(Theme.bright, 0.05)
                     visible: !(icon.status === Image.Ready && icon.source != "")
                 }
                 Image {
@@ -377,23 +377,15 @@ PillSurface {
                     }
                 }
 
-                TextMetrics {
-                    id: retMetrics
-                    font.family: Theme.font
-                    font.pixelSize: 12 * root.s
-                    text: "↵"
-                }
-                Text {
+                GlyphIcon {
                     id: ret
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: parent.right
-                    text: retMetrics.text
+                    width: visible ? 20 * root.s : 0
+                    height: 14 * root.s
+                    name: "return"
                     color: Theme.vermLit
-                    font.family: Theme.font
-                    font.pixelSize: 12 * root.s
                     visible: appRow.selected && !appRow.editing
-                    width: visible ? retMetrics.advanceWidth + 6 * root.s : 0
-                    horizontalAlignment: Text.AlignRight
                 }
 
                 GlyphIcon {

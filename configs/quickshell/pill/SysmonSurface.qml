@@ -289,29 +289,48 @@ PillSurface {
                             font.letterSpacing: 0.9 * root.s
                         }
 
-                        Row {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: 8 * root.s
-                            visible: cell.key === "net"
+                            Row {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: 3 * root.s
+                                visible: cell.key === "net"
 
-                            Text {
-                                text: "↓" + Sysmon.netDown.toFixed(1)
-                                color: Theme.cream
-                                font.family: Theme.font
-                                font.pixelSize: 13 * root.s
-                                font.weight: Font.ExtraBold
-                                font.features: { "tnum": 1 }
+                                GlyphIcon {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 14 * root.s
+                                    height: 14 * root.s
+                                    name: "arrow-down"
+                                    color: Theme.cream
+                                }
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: Sysmon.netDown.toFixed(1)
+                                    color: Theme.cream
+                                    font.family: Theme.font
+                                    font.pixelSize: 13 * root.s
+                                    font.weight: Font.ExtraBold
+                                    font.features: { "tnum": 1 }
+                                }
+                                Item {
+                                    width: 8 * root.s
+                                    height: 1
+                                }
+                                GlyphIcon {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 14 * root.s
+                                    height: 14 * root.s
+                                    name: "arrow-up"
+                                    color: Theme.vermLit
+                                }
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: Sysmon.netUp.toFixed(1)
+                                    color: Theme.vermLit
+                                    font.family: Theme.font
+                                    font.pixelSize: 13 * root.s
+                                    font.weight: Font.ExtraBold
+                                    font.features: { "tnum": 1 }
+                                }
                             }
-                            Text {
-                                text: "↑" + Sysmon.netUp.toFixed(1)
-                                color: Theme.vermLit
-                                font.family: Theme.font
-                                font.pixelSize: 13 * root.s
-                                font.weight: Font.ExtraBold
-                                font.features: { "tnum": 1 }
-                            }
-                        }
-
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             visible: cell.key !== "net"

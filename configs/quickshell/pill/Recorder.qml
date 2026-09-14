@@ -265,7 +265,7 @@ PillSurface {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 1
-            color: Theme.hairSoft
+            color: "transparent"
             visible: !orow.first
         }
 
@@ -967,7 +967,7 @@ PillSurface {
         Rectangle {
             width: parent.width
             height: 1
-            color: Theme.hair
+            color: "transparent"
         }
 
         Item { width: 1; height: 11 * root.s }
@@ -1013,7 +1013,7 @@ PillSurface {
         Rectangle {
             width: parent.width
             height: 1
-            color: Theme.hair
+            color: "transparent"
         }
 
         Item { width: 1; height: 11 * root.s }
@@ -1120,7 +1120,7 @@ PillSurface {
         Rectangle {
             width: parent.width
             height: 1
-            color: Theme.hair
+            color: "transparent"
         }
 
         Item { width: 1; height: 12 * root.s }

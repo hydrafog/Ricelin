@@ -20,6 +20,7 @@ Item {
 
     property real s: 1
     property var barWindow
+    readonly property bool menuOpen: menu.open
 
     visible: SystemTray.items.values.length > 0
     implicitWidth: visible ? row.implicitWidth : 0
@@ -59,7 +60,7 @@ Item {
                     anchors.fill: parent
                     radius: 6 * tray.s
                     color: Theme.frameBg
-                    border.width: 1
+                    border.width: 0
                     border.color: Theme.frameBorder
                     opacity: area.containsMouse ? 1 : 0
                     Behavior on opacity { NumberAnimation { duration: Motion.fast } }
@@ -68,10 +69,10 @@ Item {
                 Image {
                     anchors.centerIn: parent
                     source: slot.modelData.icon
-                    sourceSize.width: 32
-                    sourceSize.height: 32
-                    width: 16 * tray.s
-                    height: 16 * tray.s
+                    sourceSize.width: 34
+                    sourceSize.height: 34
+                    width: 17 * tray.s
+                    height: 17 * tray.s
                     fillMode: Image.PreserveAspectFit
                     smooth: true
                     cache: true
@@ -133,7 +134,7 @@ Item {
             anchors.leftMargin: 8 * tray.s + mrow.indent
             anchors.rightMargin: 8 * tray.s
             height: 1
-            color: Theme.hair
+            color: "transparent"
         }
 
         Rectangle {

@@ -609,16 +609,16 @@ SettingsSurface {
                             }
                         }
 
-                        Text {
+                        GlyphIcon {
                             anchors.top: parent.top
                             anchors.right: parent.right
                             anchors.topMargin: 3 * root.s
                             anchors.rightMargin: 5 * root.s
                             visible: tile.isMain
-                            text: "★"
+                            width: 12 * root.s
+                            height: 12 * root.s
+                            name: "star"
                             color: Theme.vermLit
-                            font.family: Theme.fontJp
-                            font.pixelSize: 9.5 * root.s
                         }
 
                         /**

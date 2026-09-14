@@ -376,7 +376,7 @@ PillSurface {
             Rectangle {
                 width: wxCol.width
                 height: 1
-                color: Theme.hairSoft
+                color: "transparent"
             }
 
             Row {
@@ -453,7 +453,7 @@ PillSurface {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         width: 1
-        color: Theme.hair
+        color: "transparent"
         visible: root.weatherShown
         opacity: weather.opacity
     }
@@ -548,7 +548,7 @@ PillSurface {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 1
-            color: Theme.hair
+            color: "transparent"
         }
 
         Row {
@@ -708,7 +708,7 @@ PillSurface {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         width: 1
-        color: Theme.hair
+        color: "transparent"
         visible: root.editorShown
         opacity: editor.opacity
     }
@@ -815,7 +815,7 @@ PillSurface {
             Rectangle {
                 width: parent.width
                 height: 1
-                color: Theme.hair
+                color: "transparent"
             }
 
             /** Capped so a day stacked with events scrolls instead of growing the surface. */
@@ -952,7 +952,7 @@ PillSurface {
             Rectangle {
                 width: parent.width
                 height: 1
-                color: Theme.hair
+                color: "transparent"
             }
 
             Row {

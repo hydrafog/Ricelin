@@ -547,9 +547,9 @@ Item {
             width: 360 * root.s
             height: 55 * root.s
             radius: 8 * root.s
-            color: Qt.rgba(1, 1, 1, 0.08)
+            color: Qt.alpha(brightWhite, 0.08)
             border.width: 1
-            border.color: Qt.rgba(1, 1, 1, 0.20)
+            border.color: Qt.alpha(brightWhite, 0.20)
 
             property real shakeOffset: 0
             transform: Translate { x: pill.shakeOffset }

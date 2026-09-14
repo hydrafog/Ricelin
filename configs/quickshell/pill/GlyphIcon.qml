@@ -6,7 +6,9 @@ import "Singletons"
  * Self-contained vector glyph drawn from baked Solar (480 Design) icon path data,
  * so the pill never depends on the system icon theme or external asset files. Set `name` to pick a
  * glyph, `color` to tint it; stroked glyphs use `stroke` width, filled glyphs
- * (media transport) paint solid. Paths live in a 24x24 space and scale to the
+ * (media transport) paint solid. `duoColor` paints a duotone underlay beneath
+ * the main path at `duoOpacity`, so stroked glyphs gain an accent halo while
+ * filled glyphs tint solid. Paths live in a 24x24 space and scale to the
  * item's size. Each glyph's actual bounding box is centred within the item on
  * both axes, so glyphs with differing path extents share one optical baseline.
  */
@@ -15,6 +17,8 @@ Item {
 
     property string name: ""
     property color color: Theme.iconDim
+    property color duoColor: Theme.vermLit
+    property real duoOpacity: 0.28
     property real stroke: 1.8
     property real fillProgress: 1
 
@@ -87,6 +91,8 @@ Item {
         "video": { d: "M2 11.5C2 8.21252 2 6.56878 2.90796 5.46243C3.07418 5.25989 3.25989 5.07418 3.46243 4.90796C4.56878 4 6.21252 4 9.5 4C12.7875 4 14.4312 4 15.5376 4.90796C15.7401 5.07418 15.9258 5.25989 16.092 5.46243C17 6.56878 17 8.21252 17 11.5V12.5C17 15.7875 17 17.4312 16.092 18.5376C15.9258 18.7401 15.7401 18.9258 15.5376 19.092C14.4312 20 12.7875 20 9.5 20C6.21252 20 4.56878 20 3.46243 19.092C3.25989 18.9258 3.07418 18.7401 2.90796 18.5376C2 17.4312 2 15.7875 2 12.5V11.5Z M17 9.50019L17.6584 9.17101C19.6042 8.19807 20.5772 7.7116 21.2886 8.15127C22 8.59094 22 9.67872 22 11.8543V12.1461C22 14.3217 22 15.4094 21.2886 15.8491C20.5772 16.2888 19.6042 15.8023 17.6584 14.8294L17 14.5002V9.50019Z", fill: false },
         "record": { d: "M2 12a10 10 0 1 0 20 0a10 10 0 1 0 -20 0", fill: false },
         "gamepad": { d: "M10.165 4.77922L10.6669 5.13443C11.0567 5.41029 11.5225 5.55844 12 5.55844C12.4776 5.55844 12.9434 5.41029 13.3332 5.13441L13.8351 4.77922C14.5514 4.27225 15.4074 4 16.2849 4H16.8974C17.3016 4 17.7099 4.02549 18.0908 4.16059C20.4735 5.00566 22.1125 8.09503 21.994 15.1026C21.9701 16.5145 21.6397 18.075 20.3658 18.6842C19.9688 18.8741 19.5033 19 18.9733 19C18.3373 19 17.8322 18.8187 17.4424 18.5632C16.5285 17.9642 15.8588 16.9639 14.8888 16.4609C14.3048 16.1581 13.6566 16 12.9989 16H11.0011C10.3434 16 9.69519 16.1581 9.11125 16.4609C8.14122 16.9639 7.47153 17.9642 6.55763 18.5632C6.1678 18.8187 5.66273 19 5.02671 19C4.49667 19 4.03121 18.8741 3.63423 18.6842C2.3603 18.075 2.02992 16.5145 2.00604 15.1026C1.88749 8.09504 3.52645 5.00566 5.90915 4.16059C6.29009 4.02549 6.69838 4 7.10257 4H7.71504C8.59264 4 9.44862 4.27225 10.165 4.77922Z M7.5 9V12M6 10.5L9 10.5 M15.25 10.25H15.2501 M16.75 11.75H16.7501 M18.25 10.25H18.2501 M16.75 8.75H16.7501", fill: false },
+        "star": { d: "M12 2.5L14.85 8.6L21.5 9.3L16.5 13.8L18 20.5L12 17L6 20.5L7.5 13.8L2.5 9.3L9.15 8.6Z", fill: false },
+        "arrow-down": { d: "M12 4L12 20M6 14L12 20L18 14", fill: false },
     })
 
     readonly property var g: glyphs[name] !== undefined ? glyphs[name] : ({ d: "", fill: false })
@@ -106,6 +112,15 @@ Item {
            : (root.height - 24 * root.u) / 2
         antialiasing: true
         preferredRendererType: Shape.CurveRenderer
+
+        ShapePath {
+            strokeColor: root.g.fill ? "transparent" : Qt.alpha(root.duoColor, root.duoOpacity)
+            fillColor: root.g.fill ? Qt.alpha(root.duoColor, root.duoOpacity) : "transparent"
+            strokeWidth: root.g.fill ? 0 : root.stroke + 1.2
+            capStyle: ShapePath.RoundCap
+            joinStyle: ShapePath.RoundJoin
+            PathSvg { path: root.g.d }
+        }
 
         ShapePath {
             strokeColor: root.g.fill ? "transparent" : root.color

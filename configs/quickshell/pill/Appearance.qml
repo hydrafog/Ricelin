@@ -258,7 +258,7 @@ SettingsSurface {
                         height: 34 * root.s
                         radius: 9 * root.s
                         color: root.accentColor
-                        border.width: 1
+                        border.width: 0
                         border.color: Theme.border
                     }
 

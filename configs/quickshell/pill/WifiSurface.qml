@@ -677,7 +677,7 @@ PillSurface {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 1
-        color: Theme.hair
+        color: "transparent"
     }
 
     Item {
@@ -1113,7 +1113,7 @@ PillSurface {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 1
-            color: Theme.hair
+            color: "transparent"
         }
 
         Column {

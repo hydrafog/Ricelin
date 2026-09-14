@@ -182,8 +182,9 @@ def build_pill(colors, mode="dark"):
     pill["outline"] = d("outline")
 
     opc = d("on_primary_container")
+    tinted_white = blend(pill["primary"], "#fff6f0", 0.72)
     if hex_to_hls(opc)[1] > 0.92:
-        opc = blend(d("on_surface"), "#ffffff", 0.4)
+        opc = blend(d("on_surface"), tinted_white, 0.4)
     pill["on_primary_container"] = opc
 
     # 7-step luminous white/cream text ramp
@@ -191,13 +192,13 @@ def build_pill(colors, mode="dark"):
     on_surf_var = d("on_surface_variant")
     outline_var = d("outline_variant")
 
-    pill["bright"] = blend(on_surf, "#ffffff", 0.95)
-    pill["cream"] = blend(on_surf, "#ffffff", 0.85)
-    pill["subtle"] = blend(on_surf, "#ffffff", 0.75)
-    pill["dim"] = blend(on_surf, "#ffffff", 0.60)
-    pill["faint"] = blend(on_surf, "#ffffff", 0.45)
-    pill["icon_dim"] = blend(on_surf, "#ffffff", 0.75)
-    pill["tick_rest"] = blend(on_surf, "#ffffff", 0.70)
+    pill["bright"] = blend(on_surf, tinted_white, 0.95)
+    pill["cream"] = blend(on_surf, tinted_white, 0.85)
+    pill["subtle"] = blend(on_surf, tinted_white, 0.75)
+    pill["dim"] = blend(on_surf, tinted_white, 0.60)
+    pill["faint"] = blend(on_surf, tinted_white, 0.45)
+    pill["icon_dim"] = blend(on_surf, tinted_white, 0.75)
+    pill["tick_rest"] = blend(on_surf, tinted_white, 0.70)
     pill["is_light"] = (mode == "light")
 
     return pill

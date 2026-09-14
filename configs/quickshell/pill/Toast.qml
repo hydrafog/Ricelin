@@ -55,7 +55,7 @@ Item {
         height: 28 * root.s
         radius: 9 * root.s
         color: Theme.tileBg
-        border.width: 1
+        border.width: 0
         border.color: Theme.border
 
         Image {
@@ -81,17 +81,23 @@ Item {
         }
     }
 
-    Text {
+    Item {
         id: dismiss
         anchors.right: parent.right
         anchors.top: parent.top
-        text: "✕"
-        color: dismissArea.containsMouse ? Theme.cream : Theme.dim
-        font.family: Theme.font
-        font.pixelSize: 11 * root.s
+        width: 14 * root.s
+        height: 14 * root.s
 
-        Behavior on color {
-            ColorAnimation { duration: Motion.fast }
+        GlyphIcon {
+            anchors.centerIn: parent
+            width: 14 * root.s
+            height: 14 * root.s
+            name: "close"
+            color: dismissArea.containsMouse ? Theme.cream : Theme.dim
+
+            Behavior on color {
+                ColorAnimation { duration: Motion.fast }
+            }
         }
 
         MouseArea {
@@ -194,7 +200,7 @@ Item {
                     width: actText.implicitWidth + 18 * root.s
                     radius: 999
                     color: Theme.tileBg
-                    border.width: 1
+                    border.width: 0
                     border.color: Theme.border
 
                     Text {

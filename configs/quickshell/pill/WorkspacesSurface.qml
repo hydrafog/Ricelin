@@ -264,7 +264,7 @@ PillSurface {
                     height: 22 * root.s
                     radius: 6 * root.s
                     color: gchip.on ? Qt.alpha(Theme.vermLit, 0.12) : (gArea.containsMouse ? Theme.frameBg : "transparent")
-                    border.width: 1
+                    border.width: 0
                     border.color: gchip.on ? Qt.alpha(Theme.vermLit, 0.55) : "transparent"
                     Behavior on color { ColorAnimation { duration: Motion.fast } }
 

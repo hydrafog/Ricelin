@@ -37,7 +37,7 @@ message-bg-color: "#00000000"
     height          = 50%
     item_font       = "Cormorant Bold 44"
     item_color      = "#ddc8bc"
-    selected_item_color = "#ffffff"
+    selected_item_color = "#fff6f0"
     selected_item_pixmap_style = "select_*.png"
     item_height     = 62
     item_padding    = 14

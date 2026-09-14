@@ -586,7 +586,7 @@ SettingsSurface {
                             topRightRadius: corner === 1 ? radius : 0
                             bottomRightRadius: corner === 1 ? radius : 0
                             color: seg.on ? Qt.alpha(Theme.vermLit, 0.20) : Theme.frameBg
-                            border.width: 1
+                            border.width: 0
                             border.color: seg.on ? Qt.alpha(Theme.vermLit, 0.55) : Theme.hairSoft
                             Behavior on color { ColorAnimation { duration: Motion.fast } }
                             Behavior on border.color { ColorAnimation { duration: Motion.fast } }
@@ -789,7 +789,7 @@ SettingsSurface {
             anchors.rightMargin: 12 * root.s
             visible: root.behind || root.statusKind !== "devmode"
             height: visible ? 1 : 0
-            color: Theme.hair
+            color: "transparent"
         }
 
         Item { width: 1; height: (root.behind || root.statusKind !== "devmode") ? 15 * root.s : 0 }

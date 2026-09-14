@@ -181,7 +181,7 @@ PillSurface {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 1
-        color: Theme.hair
+        color: "transparent"
 
         Rectangle {
             anchors.top: parent.top
@@ -245,7 +245,7 @@ PillSurface {
                 radius: 9 * root.s
                 visible: row.selected || rowHover.hovered
                 color: row.selected ? Theme.frameBg : Qt.rgba(0.94, 0.88, 0.84, 0.03)
-                border.width: row.selected ? 1 : 0
+                border.width: 0
                 border.color: Theme.frameBorder
             }
 
@@ -272,7 +272,7 @@ PillSurface {
                     height: 32 * root.s
                     radius: 6 * root.s
                     color: Theme.tileBg
-                    border.width: 1
+                    border.width: 0
                     border.color: Theme.border
                     clip: true
 
@@ -324,29 +324,30 @@ PillSurface {
                     id: tail
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    width: Math.max(ret.implicitWidth, dismiss.implicitWidth)
-                    height: Math.max(ret.implicitHeight, dismiss.implicitHeight)
+                    width: 14 * root.s
+                    height: 14 * root.s
 
-                    Text {
+                    GlyphIcon {
                         id: ret
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         opacity: row.selected && !rowHover.hovered ? 1 : 0
-                        text: "↵"
+                        width: 14 * root.s
+                        height: 14 * root.s
+                        name: "return"
                         color: Theme.vermLit
-                        font.family: Theme.font
-                        font.pixelSize: 12 * root.s
                         Behavior on opacity { NumberAnimation { duration: Motion.fast } }
                     }
 
-                    Text {
+                    GlyphIcon {
                         id: dismiss
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         opacity: rowHover.hovered ? 1 : 0
-                        text: "✕"
+                        width: 14 * root.s
+                        height: 14 * root.s
+                        name: "close"
                         color: dismissArea.containsMouse ? Theme.cream : Theme.dim
-                        font.pixelSize: 10 * root.s
                         Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
                         MouseArea {

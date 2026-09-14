@@ -515,7 +515,7 @@ PillSurface {
         radius: height / 2
         color: Theme.frameBg
         antialiasing: true
-        border.width: 1
+        border.width: 0
         border.color: Theme.hairSoft
 
         readonly property Item currentChip: root.kindFilter === "all" ? chipAll : (root.kindFilter === "still" ? chipStill : chipLive)
@@ -528,7 +528,7 @@ PillSurface {
             x: segRow.x + filterRow.currentChip.x + 2 * root.s
             width: filterRow.currentChip.width - 4 * root.s
             color: Qt.alpha(Theme.onGlow, 0.18)
-            border.width: 1
+            border.width: 0
             border.color: Qt.alpha(Theme.onGlow, 0.45)
             Behavior on x { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
             Behavior on width { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
@@ -590,7 +590,7 @@ PillSurface {
         radius: height / 2
         color: Theme.frameBg
         antialiasing: true
-        border.width: 1
+        border.width: 0
         border.color: Theme.hairSoft
 
         readonly property Item currentChip: Flags.wallpaperLight ? chipLight : chipDark
@@ -603,7 +603,7 @@ PillSurface {
             x: lightDarkSegRow.x + lightDarkRow.currentChip.x + 2 * root.s
             width: lightDarkRow.currentChip.width - 4 * root.s
             color: Qt.alpha(Theme.onGlow, 0.18)
-            border.width: 1
+            border.width: 0
             border.color: Qt.alpha(Theme.onGlow, 0.45)
             Behavior on x { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
             Behavior on width { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
@@ -911,18 +911,18 @@ PillSurface {
                     anchors.left: parent.left
                     anchors.margins: 5 * root.s
                     visible: tile.motion
-                    width: motionText.implicitWidth + 9 * root.s
-                    height: motionText.implicitHeight + 4 * root.s
+                    width: 20 * root.s
+                    height: 16 * root.s
                     radius: height / 2
                     color: Qt.rgba(0, 0, 0, 0.55)
 
-                    Text {
+                    GlyphIcon {
                         id: motionText
                         anchors.centerIn: parent
-                        text: "▶"
+                        width: 9 * root.s
+                        height: 9 * root.s
+                        name: "play"
                         color: Theme.cream
-                        font.family: Theme.font
-                        font.pixelSize: 7.5 * root.s
                     }
                 }
 
@@ -1055,9 +1055,9 @@ PillSurface {
                             width: Math.max(2, mrect.modelData.w - 1.5 * root.s)
                             height: Math.max(2, mrect.modelData.h - 1.5 * root.s)
                             radius: 3 * root.s
-                            color: monHover.hovered ? Qt.alpha(Theme.vermLit, 0.45) : Qt.rgba(1, 1, 1, 0.10)
+                            color: monHover.hovered ? Qt.alpha(Theme.vermLit, 0.45) : Qt.alpha(Theme.bright, 0.10)
                             border.width: 1
-                            border.color: monHover.hovered ? Theme.vermLit : Qt.rgba(1, 1, 1, 0.35)
+                            border.color: monHover.hovered ? Theme.vermLit : Qt.alpha(Theme.bright, 0.35)
 
                             Behavior on color { ColorAnimation { duration: Motion.fast } }
                             Behavior on border.color { ColorAnimation { duration: Motion.fast } }

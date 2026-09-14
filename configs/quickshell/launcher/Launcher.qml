@@ -15,9 +15,10 @@ Item {
     width: 540
     implicitHeight: frame.implicitHeight
 
-    readonly property color bgTop: Qt.rgba(1, 1, 1, 0.08)
-    readonly property color bgBot: Qt.rgba(1, 1, 1, 0.08)
-    readonly property color hair: Qt.rgba(1, 1, 1, 0.20)
+    readonly property color white: "#fff6f0"
+    readonly property color bgTop: Qt.alpha(white, 0.08)
+    readonly property color bgBot: Qt.alpha(white, 0.08)
+    readonly property color hair: Qt.alpha(white, 0.20)
     readonly property color verm: "#c0442b"
     readonly property color cream: "#fbfaf8"
     readonly property color dim: "#f0ede8"

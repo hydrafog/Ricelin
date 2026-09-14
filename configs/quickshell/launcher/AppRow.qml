@@ -13,7 +13,7 @@ Item {
     implicitHeight: 50
 
     readonly property color cream: "#fbfaf8"
-    readonly property color white: "#ffffff"
+    readonly property color white: "#fff6f0"
     readonly property color dim2: "#f0ede8"
 
     readonly property string secondary: {
@@ -53,7 +53,7 @@ Item {
             width: 26
             height: 26
             radius: 6
-            color: Qt.rgba(1, 1, 1, 0.05)
+            color: Qt.alpha(row.white, 0.05)
             visible: !(icon.status === Image.Ready && icon.source !== "")
         }
 
@@ -81,17 +81,15 @@ Item {
             width: Math.min(implicitWidth, parent.width - icon.width - 12 - secondary.width - enter.width - 18)
         }
 
-        Text {
+        GlyphIcon {
             id: enter
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
-            text: "↵"
-            color: row.white
-            font.family: "Inter"
-            font.pixelSize: 13
+            width: visible ? 14 : 0
+            height: 14
             visible: row.selected
-            width: visible ? implicitWidth + 7 : 0
-            horizontalAlignment: Text.AlignRight
+            name: "return"
+            color: row.white
         }
 
         Text {
@@ -99,7 +97,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: enter.left
             text: row.secondary
-            color: row.selected ? Qt.rgba(1, 1, 1, 0.90) : row.dim2
+            color: row.selected ? Qt.alpha(row.white, 0.90) : row.dim2
             font.family: "Inter"
             font.pixelSize: 12
             horizontalAlignment: Text.AlignRight

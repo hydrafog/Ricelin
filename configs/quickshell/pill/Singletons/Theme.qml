@@ -37,27 +37,27 @@ Singleton {
     property color cream:    dyn ? Dyn.cream : "#fbfaf8"
     Behavior on cream { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color bright:   dyn ? Dyn.bright : "#ffffff"
+    property color bright:   dyn ? Dyn.bright : "#fff6f0"
     Behavior on bright { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color dim:      dyn ? Dyn.dim : "#eae6e0"
     Behavior on dim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color cardTop:  Qt.rgba(1, 1, 1, 0.08)
+    property color cardTop:  Qt.alpha(bright, 0.08)
     Behavior on cardTop { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color cardBot:  Qt.rgba(1, 1, 1, 0.08)
+    property color cardBot:  Qt.alpha(bright, 0.08)
     Behavior on cardBot { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color activeBorder: dyn ? Qt.alpha(Dyn.primary, 0.40) : Qt.alpha(vermLit, 0.40)
     Behavior on activeBorder { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color border:   Qt.rgba(1, 1, 1, 0.20)
+    property color border:   Qt.alpha(bright, 0.20)
     readonly property color borderRing: dyn ? Qt.alpha(Dyn.surface, 0.70) : Qt.rgba(0, 0, 0, 0.40)
     Behavior on border { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color shadow:     Qt.rgba(0, 0, 0, 0.20)
-    property color tileBg:   Qt.rgba(1, 1, 1, 0.05)
+    property color tileBg:   Qt.alpha(bright, 0.05)
     Behavior on tileBg { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color subtle:   dyn ? Dyn.subtle : "#f6f4f0"
@@ -106,8 +106,8 @@ Singleton {
 
     property color ghost:     dyn ? Dyn.surfaceContainerHighest : "#594636"
     Behavior on ghost { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
-    readonly property color frameBg:      Qt.rgba(1, 1, 1, 0.08)
-    readonly property color frameBorder:  Qt.rgba(1, 1, 1, 0.20)
+    readonly property color frameBg:      Qt.alpha(bright, 0.08)
+    readonly property color frameBorder:  Qt.alpha(bright, 0.20)
     readonly property color creamMenu:     Qt.alpha(cream, 0.82)
     readonly property real shadowOpacity: 0.20
     /**

@@ -114,7 +114,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 1
-        color: Theme.hairSoft
+        color: "transparent"
         visible: !srow.last
     }
 }

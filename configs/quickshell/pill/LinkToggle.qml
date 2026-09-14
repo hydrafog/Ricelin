@@ -16,7 +16,7 @@ Rectangle {
     height: 16 * s
     radius: 999
     color: on ? Theme.verm : Theme.tileBg
-    border.width: on ? 0 : 1
+    border.width: 0
     border.color: Theme.border
 
     Rectangle {

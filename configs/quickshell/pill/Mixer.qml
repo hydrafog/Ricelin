@@ -193,8 +193,8 @@ PillSurface {
         width: 26 * root.s
         height: 26 * root.s
         radius: 8 * root.s
-        color: chip.on ? Theme.frameBg : "transparent"
-        border.width: 1
+        color: chip.on ? Theme.frameBg : Theme.tileBg
+        border.width: 0
         border.color: chip.on ? Theme.frameBorder : Theme.border
 
         GlyphIcon {
@@ -239,8 +239,8 @@ PillSurface {
         height: 26 * root.s
         radius: 8 * root.s
         color: dchip.open ? Qt.alpha(Theme.onGlow, 0.14)
-            : (dchipHover.hovered ? Theme.frameBg : "transparent")
-        border.width: 1
+            : (dchipHover.hovered ? Theme.frameBg : Theme.tileBg)
+        border.width: 0
         border.color: dchip.open ? Qt.alpha(Theme.onGlow, 0.5) : Theme.border
         Behavior on color { ColorAnimation { duration: Motion.fast } }
 
@@ -356,7 +356,7 @@ PillSurface {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 1
-        color: Theme.hair
+        color: "transparent"
     }
 
     /**

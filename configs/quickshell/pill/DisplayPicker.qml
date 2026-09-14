@@ -64,8 +64,8 @@ Item {
             width: parent.width - 72 * pick.s
             height: 24 * pick.s
             radius: 9 * pick.s
-            color: pick.open ? Qt.alpha(Theme.onGlow, 0.14) : (field.hovered ? Theme.frameBg : "transparent")
-            border.width: 1
+            color: pick.open ? Qt.alpha(Theme.onGlow, 0.14) : (field.hovered ? Theme.frameBg : Theme.tileBg)
+            border.width: 0
             border.color: pick.open ? Qt.alpha(Theme.onGlow, 0.5) : Theme.hairSoft
             Behavior on color { ColorAnimation { duration: Motion.fast } }
 

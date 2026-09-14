@@ -261,7 +261,7 @@ PillSurface {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 1
-        color: Theme.hair
+        color: "transparent"
     }
 
     Item {
@@ -337,7 +337,7 @@ PillSurface {
                                 height: 26 * root.s
                                 radius: 8 * root.s
                                 color: Theme.tileBg
-                                border.width: 1
+                                border.width: 0
                                 border.color: Theme.border
 
                                 GlyphIcon {
@@ -427,7 +427,7 @@ PillSurface {
                                     visible: !devItem.isPaired && !devItem.pairing
                                     radius: 999
                                     color: pairArea.containsMouse ? Theme.frameBg : Theme.tileBg
-                                    border.width: 1
+                                    border.width: 0
                                     border.color: pairArea.containsMouse ? Theme.vermDim : Theme.border
                                     height: 18 * root.s
                                     width: pairText.implicitWidth + 16 * root.s
@@ -486,8 +486,8 @@ PillSurface {
                                     width: primaryLabel.implicitWidth + 20 * root.s
                                     height: 22 * root.s
                                     radius: 7 * root.s
-                                    color: primaryArea.containsMouse ? Theme.tileBg : "transparent"
-                                    border.width: 1
+                                    color: primaryArea.containsMouse ? Theme.frameBg : Theme.tileBg
+                                    border.width: 0
                                     border.color: primaryArea.containsMouse ? Theme.vermDim : Theme.border
 
                                     Text {
@@ -520,7 +520,7 @@ PillSurface {
                                     color: forgetArea.containsMouse
                                         ? Qt.rgba(Theme.verm.r, Theme.verm.g, Theme.verm.b, 0.2)
                                         : Qt.rgba(Theme.verm.r, Theme.verm.g, Theme.verm.b, 0.12)
-                                    border.width: 1
+                                    border.width: 0
                                     border.color: Qt.rgba(Theme.vermLit.r, Theme.vermLit.g, Theme.vermLit.b, 0.45)
 
                                     Text {

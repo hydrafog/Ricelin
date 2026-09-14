@@ -164,7 +164,7 @@ PillSurface {
                     visible: cell.index === root.splitAfter
                     width: 1
                     height: 26 * root.s
-                    color: Theme.hair
+                    color: "transparent"
                 }
 
                 Item {
@@ -217,8 +217,8 @@ PillSurface {
                     Rectangle {
                         anchors.fill: parent
                         radius: Motion.rTile * root.s
-                        color: tile.isHover ? Theme.frameBg : "transparent"
-                        border.width: 1
+                        color: tile.isHover ? Theme.frameBg : Theme.tileBg
+                        border.width: 0
                         border.color: tile.isHover ? Theme.frameBorder : Theme.border
                         Behavior on color { ColorAnimation { duration: Motion.fast } }
                     }

@@ -14,10 +14,10 @@ Singleton {
     property color verm:   dyn ? Qt.darker(Dyn.primary, 1.18) : "#c0442b"
     Behavior on verm { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color cream:  dyn ? Dyn.cream : "#fcfbfb"
-    Behavior on cream { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
+    property color cream:  dyn ? Dyn.cream : "#f5ebe1"
+Behavior on cream { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color bright: dyn ? Dyn.bright : "#fefefe"
+    property color bright: dyn ? Dyn.bright : "#fff6f0"
     Behavior on bright { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color dim:    dyn ? Dyn.dim : "#f7f5f4"
@@ -25,9 +25,9 @@ Singleton {
 
     readonly property string font:  "SF Pro Display"
 
-    readonly property color fieldBg: dyn ? Qt.alpha(bright, 0.08) : Qt.rgba(1, 1, 1, 0.08)
-    readonly property color fieldBorder: dyn ? Qt.alpha(bright, 0.20) : Qt.rgba(1, 1, 1, 0.20)
-    readonly property color trackBg: dyn ? Qt.alpha(cream, 0.16) : Qt.rgba(240 / 255, 224 / 255, 215 / 255, 0.16)
+    readonly property color fieldBg: dyn ? Qt.alpha(bright, 0.08) : Qt.alpha(bright, 0.08)
+    readonly property color fieldBorder: dyn ? Qt.alpha(bright, 0.20) : Qt.alpha(bright, 0.20)
+    readonly property color trackBg: dyn ? Qt.alpha(cream, 0.16) : Qt.alpha(cream, 0.16)
 
     property color error:  dyn ? Dyn.primary : "#e0563b"
     Behavior on error { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }

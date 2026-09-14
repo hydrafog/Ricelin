@@ -73,6 +73,7 @@ Item {
     readonly property bool btOn: btAdapter ? btAdapter.enabled === true : false
     readonly property bool surfaceOpen: surface.length > 0
     property bool hoverLatch: false
+    property bool trayMenuOpen: false
 
     /**
      * False for the first seconds after the shell maps. Hyprland hands pointer
@@ -89,7 +90,7 @@ Item {
         onTriggered: pill.bootSettled = true
     }
 
-    readonly property bool expanded: surfaceOpen || held || hoverLatch
+    readonly property bool expanded: surfaceOpen || held || hoverLatch || trayMenuOpen
 
     /**
      * True while the open surface is waiting on an external auth dialog (the
@@ -887,6 +888,10 @@ Item {
         id: graceTimer
         interval: 300
         onTriggered: {
+            if (pill.trayMenuOpen) {
+                graceTimer.restart();
+                return;
+            }
             if (pill.morphCloseness < 0.95) {
                 graceTimer.restart();
                 return;
@@ -1540,7 +1545,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 1
                 height: 22 * pill.s
-                color: Theme.hair
+                color: "transparent"
             }
 
             Row {
@@ -1796,15 +1801,17 @@ Item {
                     visible: minimized.count > 0
                     width: 1
                     height: 14 * pill.s
-                    color: Theme.hair
+                    color: "transparent"
                     opacity: 0.7
                 }
 
                 Tray {
+                    id: trayRow
                     anchors.verticalCenter: parent.verticalCenter
                     s: pill.s
                     barWindow: pill.barWindow
                     enabled: hover.live
+                    onMenuOpenChanged: pill.trayMenuOpen = menuOpen
                 }
 
             }
@@ -1813,7 +1820,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 1
                 height: 22 * pill.s
-                color: Theme.hair
+                color: "transparent"
             }
 
             Row {
@@ -2420,7 +2427,7 @@ Item {
                     height: parent.height
                     radius: 11 * pill.s
                     color: qSrcArea.containsMouse ? Qt.alpha(Theme.vermLit, 0.16) : Theme.tileBg
-                    border.width: 1
+                    border.width: 0
                     border.color: qSrcArea.containsMouse ? Qt.alpha(Theme.vermLit, 0.5) : Theme.border
                     Behavior on color { ColorAnimation { duration: Motion.fast } }
 
@@ -2475,7 +2482,7 @@ Item {
                 height: quickScreens.height
                 radius: 11 * pill.s
                 color: qMonArea.containsMouse ? Qt.alpha(Theme.vermLit, 0.16) : Theme.tileBg
-                border.width: 1
+                border.width: 0
                 border.color: qMonArea.containsMouse ? Qt.alpha(Theme.vermLit, 0.5) : Theme.border
                 Behavior on color { ColorAnimation { duration: Motion.fast } }
 
