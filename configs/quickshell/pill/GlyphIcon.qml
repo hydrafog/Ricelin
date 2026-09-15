@@ -114,32 +114,29 @@ Item {
         preferredRendererType: Shape.CurveRenderer
 
         ShapePath {
-            visible: root.g.d2 !== ""
-            strokeColor: Qt.alpha(root.duoColor, root.g.o2)
+            strokeColor: root.g.d2 === "" ? "transparent" : Qt.alpha(root.duoColor, root.g.o2)
             fillColor: "transparent"
             strokeWidth: root.stroke
             capStyle: ShapePath.RoundCap
             joinStyle: ShapePath.RoundJoin
-            PathSvg { path: root.g.d2 }
+            PathSvg { path: root.g.d2 === "" ? "M0 0" : root.g.d2 }
         }
 
         ShapePath {
-            visible: root.g.df2 !== ""
             strokeColor: "transparent"
-            fillColor: Qt.alpha(root.duoColor, root.g.o2)
+            fillColor: root.g.df2 === "" ? "transparent" : Qt.alpha(root.duoColor, root.g.o2)
             capStyle: ShapePath.RoundCap
             joinStyle: ShapePath.RoundJoin
-            PathSvg { path: root.g.df2 }
+            PathSvg { path: root.g.df2 === "" ? "M0 0" : root.g.df2 }
         }
 
         ShapePath {
-            visible: root.g.d2b !== ""
-            strokeColor: Qt.alpha(root.duoColor, root.g.o2b)
+            strokeColor: root.g.d2b === "" ? "transparent" : Qt.alpha(root.duoColor, root.g.o2b)
             fillColor: "transparent"
             strokeWidth: root.stroke
             capStyle: ShapePath.RoundCap
             joinStyle: ShapePath.RoundJoin
-            PathSvg { path: root.g.d2b }
+            PathSvg { path: root.g.d2b === "" ? "M0 0" : root.g.d2b }
         }
 
         ShapePath {
