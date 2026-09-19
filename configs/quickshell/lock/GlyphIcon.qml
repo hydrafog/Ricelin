@@ -1,11 +1,11 @@
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Shapes
+import Quickshell
 
 /**
- * Baked vector glyphs for the lock, same recipe as the pill's GlyphIcon: 24x24
- * Solar icon path data stroked into a Shape, so nothing depends on icon themes.
- * `d2` carries the official LineDuotone secondary in `duoColor`.
- * Only the glyphs the lock actually needs live here.
+ * Bold macOS Tahoe glyphs for the lock: maps to MacTahoe symbolic icons
+ * with fallback to baked vector shapes at bold stroke (2.4).
  */
 Item {
     id: root
@@ -13,9 +13,41 @@ Item {
     property string name: ""
     property color color: Theme.dim
     property color duoColor: Theme.verm
-    property real stroke: 1.8
+    property real stroke: 2.4
 
     readonly property real u: Math.min(width, height) / 24
+
+    readonly property var iconMap: ({
+        "eye": "view-visible-symbolic",
+        "eye-off": "view-hidden-symbolic"
+    })
+
+    readonly property string macIconName: iconMap[root.name] || ""
+    readonly property string iconSource: macIconName ? Quickshell.iconPath(macIconName, true) : ""
+    readonly property bool hasSystemIcon: iconSource.length > 0 && iconImg.status === Image.Ready
+
+    Image {
+        id: iconImg
+        anchors.centerIn: parent
+        width: Math.min(parent.width, parent.height)
+        height: width
+        source: root.iconSource
+        sourceSize: Qt.size(width, height)
+        visible: false
+        asynchronous: false
+    }
+
+    MultiEffect {
+        anchors.fill: iconImg
+        source: iconImg
+        colorization: 1.0
+        colorizationColor: root.color
+        shadowEnabled: true
+        shadowColor: Qt.rgba(0, 0, 0, 0.90)
+        shadowBlur: 2.2
+        shadowVerticalOffset: 1.0
+        visible: root.hasSystemIcon
+    }
 
     readonly property var glyphs: ({
         "eye": { d: "M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z", d2: "M3.27489 15.2957C2.42496 14.1915 2 13.6394 2 12C2 10.3606 2.42496 9.80853 3.27489 8.70433C4.97196 6.49956 7.81811 4 12 4C16.1819 4 19.028 6.49956 20.7251 8.70433C21.575 9.80853 22 10.3606 22 12C22 13.6394 21.575 14.1915 20.7251 15.2957C19.028 17.5004 16.1819 20 12 20C7.81811 20 4.97196 17.5004 3.27489 15.2957Z ", df2: "", d2b: "", o2: 0.5, o2b: 0.5, fill: false },
@@ -25,6 +57,14 @@ Item {
 
     Shape {
         id: glyph
+        visible: !root.hasSystemIcon && root.g.d.length > 0
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowColor: Qt.rgba(0, 0, 0, 0.90)
+            shadowBlur: 2.2
+            shadowVerticalOffset: 1.0
+        }
 
         width: 24
         height: 24

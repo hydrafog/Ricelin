@@ -1,17 +1,15 @@
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Shapes
+import Quickshell
 import "Singletons"
 
 /**
- * Self-contained vector glyph drawn from baked Solar (480 Design) icon path data,
- * so the pill never depends on the system icon theme or external asset files. Set `name` to pick a
- * glyph, `color` to tint it; stroked glyphs use `stroke` width, filled glyphs
- * (media transport) paint solid. `d2` plus `df2` carry the official Solar
- * LineDuotone secondaries for the glyph, rendered in `duoColor` at the native
- * `o2` opacity, so icons read two-tone with the wallpaper accent while filled
- * glyphs stay solid. Paths live in a 24x24 space and scale to the
- * item's size. Each glyph's actual bounding box is centred within the item on
- * both axes, so glyphs with differing path extents share one optical baseline.
+ * Bold macOS Tahoe icon renderer for the pill.
+ * Maps glyph names to MacTahoe bold symbolic icons and loads them via
+ * Quickshell.iconPath(), tinted using MultiEffect to `color`.
+ * If an icon is not in the system theme, falls back to the self-contained
+ * vector glyph with bold stroke (2.4).
  */
 Item {
     id: root
@@ -19,10 +17,98 @@ Item {
     property string name: ""
     property color color: Theme.iconDim
     property color duoColor: Theme.vermLit
-    property real stroke: 1.8
+    property real stroke: 2.4
     property real fillProgress: 1
 
     readonly property real u: Math.min(width, height) / 24
+
+    readonly property var iconMap: ({
+        "speaker": "audio-volume-high-symbolic",
+        "speaker-off": "audio-volume-muted-symbolic",
+        "mic": "audio-input-microphone-high-symbolic",
+        "mic-off": "audio-input-microphone-muted-symbolic",
+        "shutdown": "system-shutdown-symbolic",
+        "reboot": "system-reboot-symbolic",
+        "suspend": "system-suspend-symbolic",
+        "lock": "system-lock-screen-symbolic",
+        "lock-round": "system-lock-screen-symbolic",
+        "lock-outline": "system-lock-screen-symbolic",
+        "logout": "system-log-out-symbolic",
+        "dnd": "notifications-disabled-symbolic",
+        "awake": "weather-clear-symbolic",
+        "wifi": "network-wireless-signal-excellent-symbolic",
+        "bluetooth": "bluetooth-active-symbolic",
+        "hotspot": "network-wireless-hotspot-symbolic",
+        "ethernet": "network-wired-symbolic",
+        "bolt": "battery-charging-symbolic",
+        "cog": "preferences-system-symbolic",
+        "clock": "preferences-system-time-symbolic",
+        "stopwatch": "preferences-system-time-symbolic",
+        "cursor": "input-mouse-symbolic",
+        "mouse": "input-mouse-symbolic",
+        "keyboard": "input-keyboard-symbolic",
+        "monitor": "video-display-symbolic",
+        "video": "camera-video-symbolic",
+        "record": "media-record-symbolic",
+        "gamepad": "input-gaming-symbolic",
+        "trash": "user-trash-symbolic",
+        "mixer": "multimedia-volume-control-symbolic",
+        "music": "applications-multimedia-symbolic",
+        "play": "media-playback-start-symbolic",
+        "play-s": "media-playback-start-symbolic",
+        "pause": "media-playback-pause-symbolic",
+        "pause-s": "media-playback-pause-symbolic",
+        "next": "media-skip-forward-symbolic",
+        "next-s": "media-skip-forward-symbolic",
+        "prev": "media-skip-backward-symbolic",
+        "prev-s": "media-skip-backward-symbolic",
+        "sun": "weather-clear-symbolic",
+        "moon": "weather-clear-night-symbolic",
+        "cloud": "weather-overcast-symbolic",
+        "cloud-rain": "weather-showers-symbolic",
+        "cloud-snow": "weather-snow-symbolic",
+        "cloud-lightning": "weather-storm-symbolic",
+        "cloud-fog": "weather-fog-symbolic",
+        "download": "folder-download-symbolic",
+        "close": "window-close-symbolic",
+        "check": "object-select-symbolic",
+        "arrow-up": "go-up-symbolic",
+        "chevron-left": "go-previous-symbolic",
+        "chevron-right": "go-next-symbolic",
+        "chevron-down": "go-down-symbolic",
+        "chevron-up": "go-up-symbolic",
+        "undo": "edit-undo-symbolic",
+        "return": "edit-undo-symbolic",
+        "app-window": "window-new-symbolic",
+        "inbox": "mail-inbox-symbolic"
+    })
+
+    readonly property string macIconName: iconMap[root.name] || ""
+    readonly property string iconSource: macIconName ? Quickshell.iconPath(macIconName, true) : ""
+    readonly property bool hasSystemIcon: iconSource.length > 0 && iconImg.status === Image.Ready
+
+    Image {
+        id: iconImg
+        anchors.centerIn: parent
+        width: Math.min(parent.width, parent.height)
+        height: width
+        source: root.iconSource
+        sourceSize: Qt.size(width, height)
+        visible: false
+        asynchronous: false
+    }
+
+    MultiEffect {
+        anchors.fill: iconImg
+        source: iconImg
+        colorization: 1.0
+        colorizationColor: root.color
+        shadowEnabled: true
+        shadowColor: Qt.rgba(0, 0, 0, 0.90)
+        shadowBlur: 2.2
+        shadowVerticalOffset: 1.0
+        visible: root.hasSystemIcon
+    }
 
     readonly property var glyphs: ({
         "sun": { d: "M6 12a6 6 0 1 0 12 0a6 6 0 1 0 -12 0  M12 2V3  M12 21V22  M22 12L21 12  M3 12L2 12 ", d2: "M19.0708 4.92969L18.678 5.32252  M5.32178 18.6777L4.92894 19.0706  M19.0708 19.0703L18.678 18.6775  M5.32178 5.32227L4.92894 4.92943", df2: "", d2b: "", o2: 0.5, o2b: 0.5, fill: false },
@@ -99,6 +185,14 @@ Item {
 
     Shape {
         id: glyph
+        visible: !root.hasSystemIcon && root.g.d.length > 0
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowColor: Qt.rgba(0, 0, 0, 0.90)
+            shadowBlur: 2.2
+            shadowVerticalOffset: 1.0
+        }
 
         width: 24
         height: 24

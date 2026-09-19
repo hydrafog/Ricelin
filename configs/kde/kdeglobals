@@ -101,7 +101,7 @@ ColorScheme=Ricelin
 widgetStyle=Breeze
 
 [Icons]
-Theme=Papirus-Dark
+Theme=MacTahoe-dark
 
 [KFileDialog Settings]
 Allow Expansion=false

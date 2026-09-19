@@ -633,11 +633,11 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         visible: opacity > 0.01
         opacity: shown ? 1 : 0
-        border.width: 0
-        border.color: "transparent"
+        border.width: 1
+        border.color: Theme.border
         gradient: Gradient {
-            GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Theme.cardTop.a * Flags.pillOpacity) }
-            GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Theme.cardBot.a * Flags.pillOpacity) }
+            GradientStop { position: 0.0; color: Theme.cardTop }
+            GradientStop { position: 1.0; color: Theme.cardBot }
         }
         Behavior on budR { NumberAnimation { duration: Motion.fast; easing.type: Motion.easeStandard } }
         Behavior on opacity { NumberAnimation { duration: Motion.standard } }
@@ -707,9 +707,9 @@ Item {
         layer.samples: 8
         layer.effect: MultiEffect {
             shadowEnabled: true
-            shadowColor: Qt.rgba(0, 0, 0, 0.035)
-            shadowBlur: 4.2
-            shadowVerticalOffset: 0.8 * pill.s
+            shadowColor: Theme.shadow
+            shadowBlur: 3.5
+            shadowVerticalOffset: 1.5 * pill.s
             shadowHorizontalOffset: 0
             autoPaddingEnabled: true
         }
@@ -726,15 +726,15 @@ Item {
             layer.samples: 8
 
             ShapePath {
-                strokeColor: "transparent"
-                strokeWidth: 0
+                strokeColor: Theme.border
+                strokeWidth: 1
                 capStyle: ShapePath.RoundCap
                 joinStyle: ShapePath.RoundJoin
 
                 fillGradient: LinearGradient {
                     x1: 0; y1: 0; x2: 0; y2: body.ph
-                    GradientStop { position: 0.0; color: Qt.alpha(Theme.cardTop, Theme.cardTop.a * Flags.pillOpacity) }
-                    GradientStop { position: 1.0; color: Qt.alpha(Theme.cardBot, Theme.cardBot.a * Flags.pillOpacity) }
+                    GradientStop { position: 0.0; color: Theme.cardTop }
+                    GradientStop { position: 1.0; color: Theme.cardBot }
                 }
 
                 startX: 0
@@ -1407,6 +1407,13 @@ Item {
     Item {
         id: rest
         anchors.fill: parent
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowColor: Qt.rgba(0, 0, 0, 0.95)
+            shadowBlur: 2.2
+            shadowVerticalOffset: 1.0
+        }
         opacity: (pill.expanded || pill.dragActive || pill.mode === "game" || pill.mode === "toast" || pill.mode === "osd" || pill.mode === "quickChoose" || pill.mode === "quickCount") ? 0 : Math.pow(pill.morphCloseness, 1.5)
         visible: opacity > 0.01
         Behavior on opacity { NumberAnimation { duration: pill.mode === "rest" ? Motion.fast : Math.round(260 * Motion.mult) } }

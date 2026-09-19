@@ -22,94 +22,88 @@ Singleton {
      * token to black, while the accent always loads and contrasts the pill
      * surface. Static mode keeps the fixed warm hex.
      */
-    property color onGlow: dyn ? Dyn.primary : "#ff9a64"
+    property color onGlow: "#007aff"
     Behavior on onGlow { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color verm:     dyn ? Qt.darker(Dyn.primary, 1.18) : "#c0442b"
+    property color verm:     dyn ? Qt.darker(Dyn.primary, 1.18) : "#0062cc"
     Behavior on verm { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color vermLit:  dyn ? Dyn.primary : "#e0563b"
+    property color vermLit:  dyn ? Dyn.primary : "#007aff"
     Behavior on vermLit { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color vermDeep: dyn ? Dyn.primaryContainer : "#a3371f"
+    property color vermDeep: dyn ? Dyn.primaryContainer : "#004999"
     Behavior on vermDeep { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color cream:    dyn ? Dyn.cream : "#fbfaf8"
+    property color cream:    "#ffffff"
     Behavior on cream { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color bright:   dyn ? Dyn.bright : "#fff6f0"
+    property color bright:   "#ffffff"
     Behavior on bright { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color dim:      dyn ? Dyn.dim : "#eae6e0"
+    property color dim:      "#d1d1d6"
     Behavior on dim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color cardTop:  Qt.alpha(bright, 0.08)
+    property color cardTop:  Qt.rgba(1, 1, 1, 0.16)
     Behavior on cardTop { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color cardBot:  Qt.alpha(bright, 0.08)
+    property color cardBot:  Qt.rgba(1, 1, 1, 0.12)
     Behavior on cardBot { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color activeBorder: dyn ? Qt.alpha(Dyn.primary, 0.40) : Qt.alpha(vermLit, 0.40)
+    property color activeBorder: Qt.rgba(0, 122, 255, 0.60)
     Behavior on activeBorder { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color border:   Qt.alpha(bright, 0.20)
-    readonly property color borderRing: dyn ? Qt.alpha(Dyn.surface, 0.70) : Qt.rgba(0, 0, 0, 0.40)
+    property color border:   Qt.rgba(1, 1, 1, 0.20)
+    readonly property color borderRing: Qt.rgba(1, 1, 1, 0.15)
     Behavior on border { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color shadow:     Qt.rgba(0, 0, 0, 0.20)
-    property color tileBg:   Qt.alpha(bright, 0.05)
+    property color shadow:     Qt.rgba(0, 0, 0, 0.40)
+    property color tileBg:   Qt.rgba(1, 1, 1, 0.08)
     Behavior on tileBg { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color subtle:   dyn ? Dyn.subtle : "#f6f4f0"
+    property color subtle:   "#8e8e93"
     Behavior on subtle { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color faint:    dyn ? Dyn.faint : "#dedad2"
+    property color faint:    "#636366"
     Behavior on faint { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color iconDim:  dyn ? Dyn.iconDim : "#f6f4f0"
+    property color iconDim:  "#ffffff"
     Behavior on iconDim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     readonly property color hair:     Qt.alpha(cream, 0.13)
     readonly property color hairSoft: Qt.alpha(cream, 0.08)
-    readonly property color sheen:    Qt.alpha(cream, 0.07)
-    property color vermDim:   dyn ? Qt.darker(Dyn.primary, 1.5) : "#8a5440"
+    readonly property color sheen:    "transparent"
+    property color vermDim:   "#0051a8"
     Behavior on vermDim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color vermDimDeep: dyn ? Qt.darker(Dyn.primary, 2.2) : "#5a3526"
+    property color vermDimDeep: "#003c7d"
     Behavior on vermDimDeep { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color vermBurn:  dyn ? Qt.darker(Dyn.primaryContainer, 1.1) : "#8a2c14"
+    property color vermBurn:  "#002e60"
     Behavior on vermBurn { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color tickRest:  dyn ? Dyn.tickRest : "#cbb6a3"
+    property color tickRest:  "#86868b"
     Behavior on tickRest { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    readonly property color threadBg:  Qt.alpha(cream, 0.13)
-    property color flameCore: dyn ? Qt.lighter(onGlow, 1.03) : "#ffd9c2"
+    readonly property color threadBg:  Qt.alpha(cream, 0.08)
+    property color flameCore: "#5ac8fa"
     Behavior on flameCore { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color flameGlow: dyn ? onGlow : "#ff9a64"
+    property color flameGlow: "#007aff"
     Behavior on flameGlow { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    /**
-     * Flame canvas ramp: literal hex strings (color type won't work), fed
-     * directly to Canvas addColorStop/strokeStyle. A color property serializes
-     * to #aarrggbb and corrupts the gradient render, so the dynamic branch passes
-     * matugen's raw hex strings through untouched rather than any Qt.darker math.
-     */
-    readonly property string flameInk:   dyn ? Dyn.primary : "#f0795a"
-    readonly property string flameEmber: dyn ? Dyn.primaryContainer : "#7e2812"
-    readonly property string flameBurn:  dyn ? Dyn.primaryContainer : "#8a2c14"
-    readonly property string flameTip:   dyn ? Dyn.onPrimaryContainer : "#ffb38a"
-    property color todayWarm: dyn ? onGlow : "#ffb38a"
+    readonly property string flameInk:   "#007aff"
+    readonly property string flameEmber: "#004999"
+    readonly property string flameBurn:  "#002e60"
+    readonly property string flameTip:   "#5ac8fa"
+    property color todayWarm: "#007aff"
     Behavior on todayWarm { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color ghost:     dyn ? Dyn.surfaceContainerHighest : "#594636"
+    property color ghost:     Qt.rgba(1, 1, 1, 0.08)
     Behavior on ghost { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
-    readonly property color frameBg:      Qt.alpha(bright, 0.08)
-    readonly property color frameBorder:  Qt.alpha(bright, 0.20)
-    readonly property color creamMenu:     Qt.alpha(cream, 0.82)
-    readonly property real shadowOpacity: 0.20
+    readonly property color frameBg:      Qt.rgba(1, 1, 1, 0.06)
+    readonly property color frameBorder:  Qt.rgba(1, 1, 1, 0.12)
+    readonly property color creamMenu:     cream
+    readonly property real shadowOpacity: 0.25
     /**
      * Snapshot of the system families, not a binding: Qt.fontFamilies() is not
      * notifiable, so a font dropped onto the pill re-registers through

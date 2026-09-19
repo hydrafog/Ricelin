@@ -81,7 +81,7 @@ Singleton {
             property string wallpaperDir: ""
             /** Super+B random target: "all" repaints every monitor, "cursor" only the one under the pointer. */
             property string randomScope: "all"
-            property real uiScale: 0.95
+            property real uiScale: 1.05
             property bool reduceMotion: false
             property int manualHue: 30
             property bool manualDark: true
