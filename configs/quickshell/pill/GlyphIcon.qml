@@ -96,18 +96,23 @@ Item {
         sourceSize: Qt.size(width, height)
         visible: false
         asynchronous: false
+        layer.enabled: true
     }
 
-    MultiEffect {
+    Rectangle {
+        id: colorRect
         anchors.fill: iconImg
-        source: iconImg
-        colorization: 1.0
-        colorizationColor: root.color
-        shadowEnabled: true
-        shadowColor: Qt.rgba(0, 0, 0, 0.90)
-        shadowBlur: 2.2
-        shadowVerticalOffset: 1.0
+        color: root.color
         visible: root.hasSystemIcon
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            maskEnabled: true
+            maskSource: iconImg
+            shadowEnabled: true
+            shadowColor: Qt.rgba(0, 0, 0, 0.90)
+            shadowBlur: 2.2
+            shadowVerticalOffset: 1.0
+        }
     }
 
     readonly property var glyphs: ({

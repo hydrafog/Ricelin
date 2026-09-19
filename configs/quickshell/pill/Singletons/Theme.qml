@@ -40,7 +40,7 @@ Singleton {
     property color bright:   "#ffffff"
     Behavior on bright { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color dim:      "#d1d1d6"
+    property color dim:      "#f2f2f7"
     Behavior on dim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color cardTop:  Qt.rgba(1, 1, 1, 0.16)
@@ -49,29 +49,29 @@ Singleton {
     property color cardBot:  Qt.rgba(1, 1, 1, 0.12)
     Behavior on cardBot { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color activeBorder: Qt.rgba(0, 122, 255, 0.60)
+    property color activeBorder: Qt.rgba(0, 122, 255, 0.75)
     Behavior on activeBorder { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color border:   Qt.rgba(1, 1, 1, 0.20)
-    readonly property color borderRing: Qt.rgba(1, 1, 1, 0.15)
+    property color border:   Qt.rgba(1, 1, 1, 0.45)
+    readonly property color borderRing: Qt.rgba(1, 1, 1, 0.30)
     Behavior on border { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color shadow:     Qt.rgba(0, 0, 0, 0.40)
-    property color tileBg:   Qt.rgba(1, 1, 1, 0.08)
+    property color tileBg:   Qt.rgba(1, 1, 1, 0.12)
     Behavior on tileBg { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color subtle:   "#8e8e93"
+    property color subtle:   "#e5e5ea"
     Behavior on subtle { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color faint:    "#636366"
+    property color faint:    "#d1d1d6"
     Behavior on faint { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
     property color iconDim:  "#ffffff"
     Behavior on iconDim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    readonly property color hair:     Qt.alpha(cream, 0.13)
-    readonly property color hairSoft: Qt.alpha(cream, 0.08)
-    readonly property color sheen:    "transparent"
+    readonly property color hair:     Qt.alpha(cream, 0.18)
+    readonly property color hairSoft: Qt.alpha(cream, 0.12)
+    readonly property color sheen:    Qt.rgba(1, 1, 1, 0.35)
     property color vermDim:   "#0051a8"
     Behavior on vermDim { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
@@ -81,10 +81,10 @@ Singleton {
     property color vermBurn:  "#002e60"
     Behavior on vermBurn { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    property color tickRest:  "#86868b"
+    property color tickRest:  "#d1d1d6"
     Behavior on tickRest { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
-    readonly property color threadBg:  Qt.alpha(cream, 0.08)
+    readonly property color threadBg:  Qt.alpha(cream, 0.12)
     property color flameCore: "#5ac8fa"
     Behavior on flameCore { ColorAnimation { duration: 1200; easing.type: Easing.OutCubic } }
 
