@@ -725,11 +725,10 @@ Item {
             layer.smooth: true
             layer.samples: 8
 
+            // Fill path (closed shape with gradient)
             ShapePath {
-                strokeColor: Theme.border
-                strokeWidth: Math.max(1, Math.round(1.2 * pill.s))
-                capStyle: ShapePath.RoundCap
-                joinStyle: ShapePath.RoundJoin
+                strokeColor: "transparent"
+                strokeWidth: 0
 
                 fillGradient: LinearGradient {
                     x1: 0; y1: 0; x2: 0; y2: body.ph
@@ -785,17 +784,59 @@ Item {
                     y: 0
                 }
             }
-        }
 
-        Rectangle {
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.topMargin: 1
-            anchors.leftMargin: body.flare + body.botR * 0.5
-            anchors.rightMargin: body.flare + body.botR * 0.5
-            height: 1
-            color: Theme.sheen
+            // Tahoe border path: strokes only the flared ears and bottom contour, leaving the top edge completely open without any outline/divider
+            ShapePath {
+                strokeColor: Theme.border
+                strokeWidth: Math.max(1, Math.round(1.2 * pill.s))
+                capStyle: ShapePath.RoundCap
+                joinStyle: ShapePath.RoundJoin
+                fillColor: "transparent"
+
+                startX: 0
+                startY: 0
+
+                PathArc {
+                    x: body.flare
+                    y: body.flare
+                    radiusX: body.flare
+                    radiusY: body.flare
+                    direction: PathArc.Clockwise
+                }
+                PathLine {
+                    x: body.flare
+                    y: Math.max(body.flare, body.ph - body.botR)
+                }
+                PathArc {
+                    x: body.flare + body.botR
+                    y: body.ph
+                    radiusX: body.botR
+                    radiusY: body.botR
+                    direction: PathArc.Counterclockwise
+                }
+                PathLine {
+                    x: Math.max(body.flare + body.botR, body.flare + body.pw - body.botR)
+                    y: body.ph
+                }
+                PathArc {
+                    x: body.flare + body.pw
+                    y: Math.max(body.flare, body.ph - body.botR)
+                    radiusX: body.botR
+                    radiusY: body.botR
+                    direction: PathArc.Counterclockwise
+                }
+                PathLine {
+                    x: body.flare + body.pw
+                    y: body.flare
+                }
+                PathArc {
+                    x: 2 * body.flare + body.pw
+                    y: 0
+                    radiusX: body.flare
+                    radiusY: body.flare
+                    direction: PathArc.Clockwise
+                }
+            }
         }
     }
     /**

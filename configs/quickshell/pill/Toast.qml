@@ -41,10 +41,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            Notifs.activateNotif(root.notif);
-            Notifs.removePopup(root.notif);
-        }
+        onClicked: Notifs.removePopup(root.notif)
     }
 
     Rectangle {
@@ -81,41 +78,11 @@ Item {
         }
     }
 
-    Item {
-        id: dismiss
-        anchors.right: parent.right
-        anchors.top: parent.top
-        width: 14 * root.s
-        height: 14 * root.s
-
-        GlyphIcon {
-            anchors.centerIn: parent
-            width: 14 * root.s
-            height: 14 * root.s
-            name: "close"
-            color: dismissArea.containsMouse ? Theme.cream : Theme.dim
-
-            Behavior on color {
-                ColorAnimation { duration: Motion.fast }
-            }
-        }
-
-        MouseArea {
-            id: dismissArea
-            anchors.fill: parent
-            anchors.margins: -6 * root.s
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: Notifs.removePopup(root.notif)
-        }
-    }
-
     Column {
         id: col
         anchors.left: iconTile.right
         anchors.leftMargin: 10 * root.s
-        anchors.right: dismiss.left
-        anchors.rightMargin: 8 * root.s
+        anchors.right: parent.right
         anchors.top: parent.top
         spacing: 3 * root.s
 
