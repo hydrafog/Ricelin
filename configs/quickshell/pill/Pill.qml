@@ -943,8 +943,11 @@ Item {
 
     TapHandler {
         enabled: !pill.surfaceOpen
-        gesturePolicy: TapHandler.WithinBounds
-        onTapped: pill.pinned = !pill.pinned
+        onTapped: {
+            pill.pinned = !pill.pinned;
+            if (pill.pinned)
+                pill.hoverLatch = true;
+        }
     }
 
     property var installQueue: []
@@ -1458,6 +1461,13 @@ Item {
         opacity: (pill.expanded || pill.dragActive || pill.mode === "game" || pill.mode === "toast" || pill.mode === "osd" || pill.mode === "quickChoose" || pill.mode === "quickCount") ? 0 : Math.pow(pill.morphCloseness, 1.5)
         visible: opacity > 0.01
         Behavior on opacity { NumberAnimation { duration: pill.mode === "rest" ? Motion.fast : Math.round(260 * Motion.mult) } }
+        TapHandler {
+            enabled: !pill.expanded && !pill.surfaceOpen
+            onTapped: {
+                pill.pinned = true;
+                pill.hoverLatch = true;
+            }
+        }
 
         Row {
             id: restRow
@@ -1530,7 +1540,7 @@ Item {
                 visible: pill.specialView === "" && Battery.present
                 anchors.verticalCenter: parent.verticalCenter
                 text: Battery.pct + "%"
-                color: Battery.low ? Theme.vermLit : (Battery.charging ? Theme.flameGlow : Theme.cream)
+                color: Theme.cream
                 font.family: Theme.font
                 font.pixelSize: 16 * pill.s
                 font.weight: Font.DemiBold
@@ -1778,7 +1788,7 @@ Item {
                             id: battPct
                             anchors.centerIn: parent
                             text: Battery.pct + "%"
-                            color: Battery.low ? Theme.vermLit : (Battery.charging ? Theme.flameGlow : Theme.cream)
+                            color: Theme.cream
                             font.family: Theme.font
                             font.pixelSize: 13 * pill.s
                             font.weight: Battery.charging ? Font.DemiBold : Font.Medium

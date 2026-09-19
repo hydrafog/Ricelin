@@ -309,19 +309,25 @@ ShellRoot {
                 enabled: overlay.modal
                 acceptedButtons: Qt.AllButtons
                 onPressed: (mouse) => {
+                    var inside = mouse.x >= pillRegion.x && mouse.x <= pillRegion.x + pillRegion.width
+                        && mouse.y >= pillRegion.y && mouse.y <= pillRegion.y + pillRegion.height;
                     if (pill.quickChoosing) {
                         ScreenRec.quickChoosing = false;
                         ScreenRec.quickScreenChoosing = false;
                     } else if (overlay.surfaceOpen) {
-                        var inside = mouse.x >= pillRegion.x && mouse.x <= pillRegion.x + pillRegion.width
-                            && mouse.y >= pillRegion.y && mouse.y <= pillRegion.y + pillRegion.height;
                         if (!inside)
                             root.close();
                         else if (mouse.y <= pillRegion.y + 40 * pill.s)
                             pill.surfaceBack();
+                        else
+                            mouse.accepted = false;
                     } else {
-                        pill.pinned = false;
-                        root.peekMon = "";
+                        if (!inside) {
+                            pill.pinned = false;
+                            root.peekMon = "";
+                        } else {
+                            mouse.accepted = false;
+                        }
                     }
                 }
             }
